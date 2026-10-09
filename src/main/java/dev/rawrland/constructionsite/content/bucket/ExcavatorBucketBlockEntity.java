@@ -2,6 +2,7 @@ package dev.rawrland.constructionsite.content.bucket;
 
 import com.simibubi.create.api.equipment.goggles.IHaveGoggleInformation;
 import com.simibubi.create.foundation.utility.CreateLang;
+import dev.rawrland.constructionsite.content.material.FallingMaterialEntity;
 import dev.rawrland.constructionsite.registry.ModBlockEntities;
 import dev.rawrland.constructionsite.registry.ModTags;
 import dev.ryanhcode.sable.Sable;
@@ -33,21 +34,24 @@ import net.minecraft.world.phys.Vec3;
 
 import javax.annotation.Nullable;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.TreeMap;
 
 /**
- * Holds the content of one bucket block and does the digging.
+ * Holds the content of one bucket block, does the digging, and lets the
+ * content go again when the bucket is tipped.
  *
  * Every bucket block holds at most one dug block. A joined bucket is simply
  * several of these working together: its capacity is the number of its blocks.
  *
  * Sable calls {@link #sable$tick} once per server tick, but only while this
  * block is part of a simulated contraption ("sub-level"). That is why a bucket
- * standing in the normal world never digs.
+ * standing in the normal world never digs and never empties.
  */
 public class ExcavatorBucketBlockEntity extends BlockEntity implements BlockEntitySubLevelActor, IHaveGoggleInformation {
 
@@ -89,6 +93,22 @@ public class ExcavatorBucketBlockEntity extends BlockEntity implements BlockEnti
     /** Scooping while backing away does not count: at most this share of the movement may point backward. */
     private static final double SCOOP_MAX_BACKWARD_SHARE = 0.2;
 
+    // Emptying: a bucket whose open side points downward lets its content go.
+
+    /** A full bucket starts to spill when its open side points this many degrees below level. Set by the spec. */
+    private static final double TIP_ANGLE_FULL = 20.0;
+    /** The last block only leaves when the open side points this many degrees below level. Set by the spec. */
+    private static final double TIP_ANGLE_LAST = 45.0;
+    /**
+     * The bucket counts as tipped when the downward part of its open side's
+     * direction is above this: the sine of the angle for a full bucket.
+     */
+    private static final double TIP_LIMIT = Math.sin(Math.toRadians(TIP_ANGLE_FULL));
+    /** A tipped bucket releases blocks once every this many ticks (a quarter of a second). Set by the spec. */
+    private static final int RELEASE_INTERVAL_TICKS = 5;
+    /** Released blocks appear this far in front of the block centre: in the middle of the next block. */
+    private static final double RELEASE_DISTANCE = 1.0;
+
     private static final String GOGGLES_TITLE = "gui.goggles.create_construction_site.excavator_bucket.title";
     private static final String GOGGLES_FILL = "gui.goggles.create_construction_site.excavator_bucket.fill";
     private static final String GOGGLES_EMPTY = "gui.goggles.create_construction_site.excavator_bucket.empty";
@@ -103,6 +123,7 @@ public class ExcavatorBucketBlockEntity extends BlockEntity implements BlockEnti
     private static final String TAG_GROUP_HEIGHT = "GroupHeight";
     private static final String TAG_GROUP_WIDTH = "GroupWidth";
     private static final String TAG_MOUNT = "Mount";
+    private static final String TAG_HOLD_UNTIL_LEVEL = "HoldUntilLevel";
 
     // ----------------------------------------------------------------- content
 
@@ -131,6 +152,12 @@ public class ExcavatorBucketBlockEntity extends BlockEntity implements BlockEnti
     /** Where the mounting ears are shown. All blocks of a bucket hold the same value; the anchor's is the one drawn. */
     private BucketMount mount = BucketMount.TOP;
 
+    /**
+     * Set when the bucket digs while tipped downward. It then keeps its content
+     * until it has been brought back to level. Only the anchor block's value counts.
+     */
+    private boolean holdUntilLevel;
+
     // ------------------------------------------------------- not saved, per tick
 
     /** Where this block's dig point was in the world over the last ticks. Newest first; null until known. */
@@ -138,6 +165,9 @@ public class ExcavatorBucketBlockEntity extends BlockEntity implements BlockEnti
 
     /** Set after the first tick on a contraption, where joining is checked once more. */
     private boolean regroupedOnContraption;
+
+    /** Ticks left until a tipped bucket releases its next blocks. Only used by the anchor block. */
+    private int releaseCooldown;
 
     public ExcavatorBucketBlockEntity(BlockPos pos, BlockState state) {
         super(ModBlockEntities.EXCAVATOR_BUCKET.get(), pos, state);
@@ -226,6 +256,19 @@ public class ExcavatorBucketBlockEntity extends BlockEntity implements BlockEnti
             member.changed();
         }
         return next;
+    }
+
+    /** The anchor block's block entity: the one block that acts for the whole bucket. This one for a single bucket. */
+    @Nullable
+    private ExcavatorBucketBlockEntity getAnchor() {
+        if (isAnchor() || level == null) {
+            return this;
+        }
+        BlockPos anchorPos = getBlockPos().offset(anchorOffset);
+        if (level.isLoaded(anchorPos) && level.getBlockEntity(anchorPos) instanceof ExcavatorBucketBlockEntity anchor) {
+            return anchor;
+        }
+        return null;
     }
 
     /** How many blocks the whole bucket can hold: one per bucket block. */
@@ -365,8 +408,18 @@ public class ExcavatorBucketBlockEntity extends BlockEntity implements BlockEnti
         Vec3 worldDigPoint = Sable.HELPER.projectOutOfSubLevel(serverLevel, localDigPoint);
         Vec3 worldTeethPoint = Sable.HELPER.projectOutOfSubLevel(serverLevel, localTeethPoint);
 
-        boolean pushed = updatePush(worldDigPoint,
-            worldDigPoint.subtract(worldCentre).normalize(),
+        // Which way the open side points in the world. Pointing clearly downward means the bucket is tipped.
+        Vec3 openSideDirection = worldDigPoint.subtract(worldCentre).normalize();
+        // How strongly it points downward: 0 when level, 1 when straight down (the sine of the angle).
+        double downward = -openSideDirection.y;
+        boolean tipped = downward > TIP_LIMIT;
+
+        // One block empties the whole bucket: the anchor.
+        if (isAnchor()) {
+            tickEmptying(serverLevel, tipped, downward);
+        }
+
+        boolean pushed = updatePush(worldDigPoint, openSideDirection,
             worldTeethPoint.subtract(worldCentre).normalize());
         if (!pushed) {
             return;
@@ -374,8 +427,111 @@ public class ExcavatorBucketBlockEntity extends BlockEntity implements BlockEnti
 
         // Dig every diggable block the dig area reaches, as long as the bucket has room.
         for (BlockPos target : digAreaTargets(serverLevel, localCentre, facing)) {
-            tryDig(serverLevel, target);
+            tryDig(serverLevel, target, tipped);
         }
+    }
+
+    // --------------------------------------------------------------- emptying
+
+    /**
+     * Runs on the anchor block every tick. While the bucket is tipped it lets
+     * blocks go: one per block of its width every quarter second, the block
+     * picked up last first. The emptier the bucket, the steeper it has to be tipped.
+     */
+    private void tickEmptying(ServerLevel serverLevel, boolean tipped, double downward) {
+        if (!tipped) {
+            // Back to level: a bucket that was holding its load may empty the next time it is tipped.
+            releaseCooldown = 0;
+            if (holdUntilLevel) {
+                holdUntilLevel = false;
+                setChanged();
+            }
+            return;
+        }
+        if (holdUntilLevel) {
+            return;
+        }
+        if (releaseCooldown > 0) {
+            releaseCooldown--;
+            return;
+        }
+        releaseCooldown = RELEASE_INTERVAL_TICKS - 1;
+
+        List<ExcavatorBucketBlockEntity> members = getGroupMembers();
+
+        // What the bucket holds, the block picked up last first.
+        List<ExcavatorBucketBlockEntity> filled = new ArrayList<>();
+        for (ExcavatorBucketBlockEntity member : members) {
+            if (!member.isEmpty()) {
+                filled.add(member);
+            }
+        }
+        if (filled.isEmpty()) {
+            return;
+        }
+        filled.sort(Comparator.comparingLong(ExcavatorBucketBlockEntity::getPickedUpAt).reversed());
+
+        // The places in the world where blocks can leave, sorted into the columns of the bucket's width.
+        Direction facing = getBlockState().getValue(ExcavatorBucketBlock.FACING);
+        Direction right = BucketGroup.axes(getBlockState()).right();
+        Vec3 forward = Vec3.atLowerCornerOf(facing.getNormal()).scale(RELEASE_DISTANCE);
+        Map<Integer, List<Vec3>> columns = new TreeMap<>();
+        for (ExcavatorBucketBlockEntity member : members) {
+            if (!BucketGroup.isFrontLayer(member.getBlockState(), member.anchorOffset)) {
+                continue;
+            }
+            int column = BucketGroup.along(member.getBlockPos().subtract(getBlockPos()), right);
+            Vec3 worldPoint = Sable.HELPER.projectOutOfSubLevel(serverLevel, member.getBlockPos().getCenter().add(forward));
+            columns.computeIfAbsent(column, key -> new ArrayList<>()).add(worldPoint);
+        }
+
+        // Each column lets one block go, from its lowest place that is free.
+        int capacity = getGroupCapacity();
+        int next = 0;
+        for (List<Vec3> points : columns.values()) {
+            // Stop when the bucket is empty, or no longer tipped steeply enough for what is left in it.
+            if (next >= filled.size() || !isSteepEnough(downward, filled.size() - next, capacity)) {
+                break;
+            }
+            points.sort(Comparator.comparingDouble((Vec3 point) -> point.y));
+            for (Vec3 point : points) {
+                BlockPos place = BlockPos.containing(point);
+                if (isFreeForRelease(serverLevel, place)) {
+                    filled.get(next).releaseContent(serverLevel, place);
+                    next++;
+                    break;
+                }
+            }
+        }
+    }
+
+    /**
+     * True if a bucket holding this many blocks lets one go when tipped this far.
+     * A full bucket needs the smallest angle; the needed angle grows evenly as it empties.
+     */
+    private static boolean isSteepEnough(double downward, int held, int capacity) {
+        double emptyShare = 1.0 - (double) held / capacity;
+        double neededAngle = TIP_ANGLE_FULL + (TIP_ANGLE_LAST - TIP_ANGLE_FULL) * emptyShare;
+        return downward >= Math.sin(Math.toRadians(neededAngle));
+    }
+
+    /** True if a released block may appear here: the place is loaded and holds air or something replaceable. */
+    private static boolean isFreeForRelease(ServerLevel serverLevel, BlockPos place) {
+        if (serverLevel.isOutsideBuildHeight(place) || !serverLevel.isLoaded(place)) {
+            return false;
+        }
+        return serverLevel.getBlockState(place).canBeReplaced();
+    }
+
+    /** Takes the content out of this block and lets it fall from the given place in the world. */
+    private void releaseContent(ServerLevel serverLevel, BlockPos place) {
+        if (storedState == null) {
+            return;
+        }
+        FallingMaterialEntity.spawn(serverLevel, place, storedState, storedBlockEntityData);
+        storedState = null;
+        storedBlockEntityData = null;
+        changed();
     }
 
     /** The world blocks that this block's part of the dig area currently reaches. */
@@ -442,7 +598,7 @@ public class ExcavatorBucketBlockEntity extends BlockEntity implements BlockEnti
         return pushing || scooping;
     }
 
-    private void tryDig(ServerLevel serverLevel, BlockPos target) {
+    private void tryDig(ServerLevel serverLevel, BlockPos target, boolean tipped) {
         if (serverLevel.isOutsideBuildHeight(target) || !serverLevel.isLoaded(target)) {
             return;
         }
@@ -480,6 +636,16 @@ public class ExcavatorBucketBlockEntity extends BlockEntity implements BlockEnti
         }
 
         receiver.setContent(state, blockEntityData, serverLevel.getGameTime());
+
+        // Dug while pointing downward: keep the load until the bucket has been levelled,
+        // or it would fall straight back into the hole it came from.
+        if (tipped) {
+            ExcavatorBucketBlockEntity anchor = getAnchor();
+            if (anchor != null && !anchor.holdUntilLevel) {
+                anchor.holdUntilLevel = true;
+                anchor.setChanged();
+            }
+        }
     }
 
     // --------------------------------------------------------------- breaking
@@ -562,6 +728,7 @@ public class ExcavatorBucketBlockEntity extends BlockEntity implements BlockEnti
         tag.putInt(TAG_GROUP_HEIGHT, groupHeight);
         tag.putInt(TAG_GROUP_WIDTH, groupWidth);
         tag.putInt(TAG_MOUNT, mount.ordinal());
+        tag.putBoolean(TAG_HOLD_UNTIL_LEVEL, holdUntilLevel);
     }
 
     @Override
@@ -586,5 +753,6 @@ public class ExcavatorBucketBlockEntity extends BlockEntity implements BlockEnti
         groupHeight = Math.max(1, tag.getInt(TAG_GROUP_HEIGHT));
         groupWidth = Math.max(1, tag.getInt(TAG_GROUP_WIDTH));
         mount = BucketMount.byIndex(tag.getInt(TAG_MOUNT));
+        holdUntilLevel = tag.getBoolean(TAG_HOLD_UNTIL_LEVEL);
     }
 }

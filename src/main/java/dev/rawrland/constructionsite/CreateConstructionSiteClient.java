@@ -1,7 +1,9 @@
 package dev.rawrland.constructionsite;
 
 import dev.rawrland.constructionsite.client.ExcavatorBucketRenderer;
+import dev.rawrland.constructionsite.client.FallingMaterialRenderer;
 import dev.rawrland.constructionsite.registry.ModBlockEntities;
+import dev.rawrland.constructionsite.registry.ModEntities;
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.fml.ModContainer;
@@ -23,5 +25,6 @@ public class CreateConstructionSiteClient {
 
     private static void registerRenderers(EntityRenderersEvent.RegisterRenderers event) {
         event.registerBlockEntityRenderer(ModBlockEntities.EXCAVATOR_BUCKET.get(), ExcavatorBucketRenderer::new);
+        event.registerEntityRenderer(ModEntities.FALLING_MATERIAL.get(), FallingMaterialRenderer::new);
     }
 }

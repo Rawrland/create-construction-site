@@ -1,6 +1,7 @@
 {
   "itemGroup.create_construction_site": "Create: Construction Site",
   "block.create_construction_site.excavator_bucket": "Excavator Bucket",
+  "entity.create_construction_site.falling_material": "Falling Material",
   "message.create_construction_site.excavator_bucket.holds": "Bucket %s/%s: %s",
   "message.create_construction_site.excavator_bucket.empty": "Bucket empty (0/%s)",
   "message.create_construction_site.excavator_bucket.entry": "%s x%s",

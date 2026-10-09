@@ -4,6 +4,7 @@ import com.mojang.logging.LogUtils;
 import dev.rawrland.constructionsite.registry.ModBlockEntities;
 import dev.rawrland.constructionsite.registry.ModBlocks;
 import dev.rawrland.constructionsite.registry.ModCreativeTabs;
+import dev.rawrland.constructionsite.registry.ModEntities;
 import dev.rawrland.constructionsite.registry.ModItems;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.fml.ModContainer;
@@ -24,6 +25,7 @@ public class CreateConstructionSite {
         ModBlocks.register(modEventBus);
         ModItems.register(modEventBus);
         ModBlockEntities.register(modEventBus);
+        ModEntities.register(modEventBus);
         ModCreativeTabs.register(modEventBus);
 
         modContainer.registerConfig(ModConfig.Type.COMMON, Config.SPEC);
