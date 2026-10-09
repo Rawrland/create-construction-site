@@ -1,31 +1,27 @@
 package dev.rawrland.constructionsite;
 
-import net.minecraft.client.Minecraft;
+import dev.rawrland.constructionsite.client.ExcavatorBucketRenderer;
+import dev.rawrland.constructionsite.registry.ModBlockEntities;
 import net.neoforged.api.distmarker.Dist;
-import net.neoforged.bus.api.SubscribeEvent;
+import net.neoforged.bus.api.IEventBus;
 import net.neoforged.fml.ModContainer;
-import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.fml.common.Mod;
-import net.neoforged.fml.event.lifecycle.FMLClientSetupEvent;
+import net.neoforged.neoforge.client.event.EntityRenderersEvent;
 import net.neoforged.neoforge.client.gui.ConfigurationScreen;
 import net.neoforged.neoforge.client.gui.IConfigScreenFactory;
 
-// This class will not load on dedicated servers. Accessing client side code from here is safe.
+/** Client-only entry point. This class is never loaded on a dedicated server. */
 @Mod(value = CreateConstructionSite.MODID, dist = Dist.CLIENT)
-// You can use EventBusSubscriber to automatically register all static methods in the class annotated with @SubscribeEvent
-@EventBusSubscriber(modid = CreateConstructionSite.MODID, value = Dist.CLIENT)
 public class CreateConstructionSiteClient {
-    public CreateConstructionSiteClient(ModContainer container) {
-        // Allows NeoForge to create a config screen for this mod's configs.
-        // The config screen is accessed by going to the Mods screen > clicking on your mod > clicking on config.
-        // Do not forget to add translations for your config options to the en_us.json file.
+
+    public CreateConstructionSiteClient(IEventBus modEventBus, ModContainer container) {
+        // Lets players open this mod's config from the Mods screen.
         container.registerExtensionPoint(IConfigScreenFactory.class, ConfigurationScreen::new);
+
+        modEventBus.addListener(CreateConstructionSiteClient::registerRenderers);
     }
 
-    @SubscribeEvent
-    static void onClientSetup(FMLClientSetupEvent event) {
-        // Some client setup code
-        CreateConstructionSite.LOGGER.info("HELLO FROM CLIENT SETUP");
-        CreateConstructionSite.LOGGER.info("MINECRAFT NAME >> {}", Minecraft.getInstance().getUser().getName());
+    private static void registerRenderers(EntityRenderersEvent.RegisterRenderers event) {
+        event.registerBlockEntityRenderer(ModBlockEntities.EXCAVATOR_BUCKET.get(), ExcavatorBucketRenderer::new);
     }
 }

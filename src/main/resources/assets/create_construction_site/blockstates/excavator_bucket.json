@@ -1,0 +1,28 @@
+{
+  "variants": {
+    "facing=north,joined=false": {
+      "model": "create_construction_site:block/excavator_bucket_joined"
+    },
+    "facing=north,joined=true": {
+      "model": "create_construction_site:block/excavator_bucket_joined"
+    },
+    "facing=east,joined=false": {
+      "model": "create_construction_site:block/excavator_bucket_joined"
+    },
+    "facing=east,joined=true": {
+      "model": "create_construction_site:block/excavator_bucket_joined"
+    },
+    "facing=south,joined=false": {
+      "model": "create_construction_site:block/excavator_bucket_joined"
+    },
+    "facing=south,joined=true": {
+      "model": "create_construction_site:block/excavator_bucket_joined"
+    },
+    "facing=west,joined=false": {
+      "model": "create_construction_site:block/excavator_bucket_joined"
+    },
+    "facing=west,joined=true": {
+      "model": "create_construction_site:block/excavator_bucket_joined"
+    }
+  }
+}

@@ -1,13 +1,14 @@
 {
   "itemGroup.create_construction_site": "Create: Construction Site",
-  "block.create_construction_site.example_block": "Example Block",
-  "item.create_construction_site.example_item": "Example Item",
-
+  "block.create_construction_site.excavator_bucket": "Excavator Bucket",
+  "message.create_construction_site.excavator_bucket.holds": "Bucket %s/%s: %s",
+  "message.create_construction_site.excavator_bucket.empty": "Bucket empty (0/%s)",
+  "message.create_construction_site.excavator_bucket.entry": "%s x%s",
+  "message.create_construction_site.excavator_bucket.more": "+%s other",
+  "gui.goggles.create_construction_site.excavator_bucket.title": "Excavator Bucket:",
+  "gui.goggles.create_construction_site.excavator_bucket.fill": "%s of %s blocks",
+  "gui.goggles.create_construction_site.excavator_bucket.empty": "Empty",
   "create_construction_site.configuration.title": "Construction Site Configs",
   "create_construction_site.configuration.section.create_construction_site.common.toml": "Construction Site Configs",
-  "create_construction_site.configuration.section.create_construction_site.common.toml.title": "Construction Site Configs",
-  "create_construction_site.configuration.items": "Item List",
-  "create_construction_site.configuration.logDirtBlock": "Log Dirt Block",
-  "create_construction_site.configuration.magicNumberIntroduction": "Magic Number Text",
-  "create_construction_site.configuration.magicNumber": "Magic Number"
+  "create_construction_site.configuration.section.create_construction_site.common.toml.title": "Construction Site Configs"
 }
