@@ -1,13 +1,16 @@
 package dev.rawrland.constructionsite.content.bucket;
 
 import com.simibubi.create.api.equipment.goggles.IHaveGoggleInformation;
+import com.simibubi.create.foundation.blockEntity.SmartBlockEntity;
+import com.simibubi.create.foundation.blockEntity.behaviour.BlockEntityBehaviour;
 import com.simibubi.create.foundation.utility.CreateLang;
 import dev.rawrland.constructionsite.content.material.FallingMaterialEntity;
 import dev.rawrland.constructionsite.registry.ModBlockEntities;
 import dev.rawrland.constructionsite.registry.ModTags;
 import dev.ryanhcode.sable.Sable;
-import dev.ryanhcode.sable.api.block.BlockEntitySubLevelActor;
 import dev.ryanhcode.sable.sublevel.ServerSubLevel;
+import dev.simulated_team.simulated.content.blocks.rope.RopeStrandHolderBehavior;
+import dev.simulated_team.simulated.content.blocks.rope.RopeStrandHolderBlockEntity;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -17,9 +20,6 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.NbtUtils;
 import net.minecraft.nbt.Tag;
 import net.minecraft.network.chat.Component;
-import net.minecraft.network.protocol.Packet;
-import net.minecraft.network.protocol.game.ClientGamePacketListener;
-import net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.Clearable;
 import net.minecraft.world.Container;
@@ -52,8 +52,17 @@ import java.util.TreeMap;
  * Sable calls {@link #sable$tick} once per server tick, but only while this
  * block is part of a simulated contraption ("sub-level"). That is why a bucket
  * standing in the normal world never digs and never empties.
+ *
+ * It builds on Create's SmartBlockEntity. That base class takes care of saving
+ * and of sending changes to the players' games, and lets ready-made parts
+ * ("behaviours") be plugged into the block entity.
+ *
+ * One such part is the rope end of Create Aeronautics (Simulated). Every bucket
+ * block has one, but a bucket only ever uses one of them: see the rope section.
+ * RopeStrandHolderBlockEntity is Simulated's interface for blocks with a rope
+ * end; it includes Sable's interface for blocks that act on a contraption.
  */
-public class ExcavatorBucketBlockEntity extends BlockEntity implements BlockEntitySubLevelActor, IHaveGoggleInformation {
+public class ExcavatorBucketBlockEntity extends SmartBlockEntity implements RopeStrandHolderBlockEntity, IHaveGoggleInformation {
 
     /**
      * Distance from the block centre to the dig point, along the open side.
@@ -158,6 +167,13 @@ public class ExcavatorBucketBlockEntity extends BlockEntity implements BlockEnti
      */
     private boolean holdUntilLevel;
 
+    /**
+     * The rope end of this block, from Create Aeronautics. It holds, saves and
+     * simulates the rope by itself. Set in addBehaviours, which runs before the
+     * other fields get their starting values, so it must not have one here.
+     */
+    private RopeStrandHolderBehavior ropeHolder;
+
     // ------------------------------------------------------- not saved, per tick
 
     /** Where this block's dig point was in the world over the last ticks. Newest first; null until known. */
@@ -171,6 +187,13 @@ public class ExcavatorBucketBlockEntity extends BlockEntity implements BlockEnti
 
     public ExcavatorBucketBlockEntity(BlockPos pos, BlockState state) {
         super(ModBlockEntities.EXCAVATOR_BUCKET.get(), pos, state);
+    }
+
+    /** The plug-in parts of this block entity: the rope end. Called while the block entity is being created. */
+    @Override
+    public void addBehaviours(List<BlockEntityBehaviour> behaviours) {
+        ropeHolder = new RopeStrandHolderBehavior(this);
+        behaviours.add(ropeHolder);
     }
 
     // ------------------------------------------------------------ this block
@@ -198,10 +221,7 @@ public class ExcavatorBucketBlockEntity extends BlockEntity implements BlockEnti
 
     /** Marks this block for saving and tells nearby players' games about the change. */
     private void changed() {
-        setChanged();
-        if (level != null && !level.isClientSide) {
-            level.sendBlockUpdated(getBlockPos(), getBlockState(), getBlockState(), Block.UPDATE_CLIENTS);
-        }
+        notifyUpdate();
     }
 
     // -------------------------------------------------------- the whole bucket
@@ -329,6 +349,97 @@ public class ExcavatorBucketBlockEntity extends BlockEntity implements BlockEnti
             }
         }
         return best;
+    }
+
+    // ------------------------------------------------------------------- rope
+
+    // A bucket takes one rope per block of its width. Each is tied to a ring on the
+    // middle tooth of its column, at the column's "hook block": the block in the
+    // front layer and bottom row, which carries that column's teeth.
+    // Create Aeronautics' own rope item, physics and drawing are used.
+
+    @Override
+    public RopeStrandHolderBehavior getBehavior() {
+        return ropeHolder;
+    }
+
+    /** True if a rope is tied to this very block. */
+    public boolean hasRope() {
+        return ropeHolder != null && ropeHolder.isAttached();
+    }
+
+    /** The hook block of one column of this bucket (0 = leftmost), or null if it cannot be found. */
+    @Nullable
+    public ExcavatorBucketBlockEntity getHookBlock(int column) {
+        if (level == null) {
+            return null;
+        }
+        Direction right = BucketGroup.axes(getBlockState()).right();
+        BlockPos pos = getBlockPos().offset(getAnchorOffset()).relative(right, column);
+        if (pos.equals(getBlockPos())) {
+            return this;
+        }
+        if (level.isLoaded(pos) && level.getBlockEntity(pos) instanceof ExcavatorBucketBlockEntity hook) {
+            return hook;
+        }
+        return null;
+    }
+
+    /**
+     * Looks for a hook block of this bucket, starting in this block's own column
+     * and going outward one column at a time. Of two columns equally far away,
+     * the one nearer the middle of the bucket is tried first.
+     *
+     * @param withRope true to find the nearest hook block that has a rope, false for the nearest free one
+     * @return the hook block, or null if the bucket has none of that kind
+     */
+    @Nullable
+    public ExcavatorBucketBlockEntity findHookBlock(boolean withRope) {
+        int width = getGroupWidth();
+        int own = getColumn();
+        List<Integer> columns = new ArrayList<>();
+        for (int column = 0; column < width; column++) {
+            columns.add(column);
+        }
+        columns.sort(Comparator
+            .<Integer>comparingInt(column -> Math.abs(column - own))
+            .thenComparingInt(column -> Math.abs(2 * column + 1 - width)));
+        for (int column : columns) {
+            ExcavatorBucketBlockEntity hook = getHookBlock(column);
+            if (hook != null && hook.hasRope() == withRope) {
+                return hook;
+            }
+        }
+        return null;
+    }
+
+    /** True if the given position is one of the blocks of this bucket. */
+    public boolean isPartOfBucket(BlockPos pos) {
+        return BucketGroup.members(getBlockPos(), getBlockState(), anchorOffset, groupHeight, groupWidth).contains(pos);
+    }
+
+    /** This block's place along the bucket's width: 0 for the leftmost block. */
+    public int getColumn() {
+        return -BucketGroup.along(getAnchorOffset(), BucketGroup.axes(getBlockState()).right());
+    }
+
+    /**
+     * Where a rope tied to this block ends: at the ring on this block's middle
+     * tooth. In the block's own position, not yet
+     * converted to the world; Create Aeronautics does that.
+     */
+    @Override
+    public Vec3 getAttachmentPoint(BlockPos pos, BlockState state) {
+        int height = getGroupHeight();
+        BucketGroup.Axes axes = BucketGroup.axes(state);
+        // Bucket pixels, measured from this block's own front bottom left corner.
+        double x = BucketTeeth.ringX(getColumn(), getGroupWidth(), height) - getColumn() * 16.0;
+        double y = BucketTeeth.ringY(height);
+        double z = BucketTeeth.ringZ(height);
+        return pos.getCenter()
+            .add(Vec3.atLowerCornerOf(axes.right().getNormal()).scale(x / 16.0 - 0.5))
+            .add(Vec3.atLowerCornerOf(axes.up().getNormal()).scale(y / 16.0 - 0.5))
+            .add(Vec3.atLowerCornerOf(axes.back().getNormal()).scale(z / 16.0 - 0.5));
     }
 
     // ---------------------------------------------------------- Create's goggles
@@ -693,26 +804,15 @@ public class ExcavatorBucketBlockEntity extends BlockEntity implements BlockEnti
         }
     }
 
-    // ---------------------------------------------------- sending to the client
+    // ------------------------------------------------- saving and sending
 
-    // Digging and joining happen on the server. These two methods send the
-    // result to the players' games, so the renderer can show it.
-
-    @Override
-    public CompoundTag getUpdateTag(HolderLookup.Provider registries) {
-        return saveWithoutMetadata(registries);
-    }
+    // Create's base class calls these two for both jobs: saving the block with the
+    // world, and sending it to the players' games (then clientPacket is true).
+    // The bucket writes the same data either way.
 
     @Override
-    public Packet<ClientGamePacketListener> getUpdatePacket() {
-        return ClientboundBlockEntityDataPacket.create(this);
-    }
-
-    // ----------------------------------------------------------------- saving
-
-    @Override
-    protected void saveAdditional(CompoundTag tag, HolderLookup.Provider registries) {
-        super.saveAdditional(tag, registries);
+    protected void write(CompoundTag tag, HolderLookup.Provider registries, boolean clientPacket) {
+        super.write(tag, registries, clientPacket);
         // Always written, so that "now empty" also reaches the client (empty updates are ignored).
         tag.putBoolean(TAG_HAS_CONTENT, storedState != null);
         if (storedState != null) {
@@ -732,8 +832,8 @@ public class ExcavatorBucketBlockEntity extends BlockEntity implements BlockEnti
     }
 
     @Override
-    protected void loadAdditional(CompoundTag tag, HolderLookup.Provider registries) {
-        super.loadAdditional(tag, registries);
+    protected void read(CompoundTag tag, HolderLookup.Provider registries, boolean clientPacket) {
+        super.read(tag, registries, clientPacket);
         storedState = null;
         storedBlockEntityData = null;
         pickedUpAt = 0;

@@ -2,22 +2,30 @@ package dev.rawrland.constructionsite.content.bucket;
 
 import com.mojang.serialization.MapCodec;
 import com.simibubi.create.content.equipment.wrench.IWrenchable;
+import com.simibubi.create.foundation.block.IBE;
+import dev.rawrland.constructionsite.registry.ModBlockEntities;
+import dev.simulated_team.simulated.content.blocks.rope.RopeHolderBlock;
+import dev.simulated_team.simulated.content.items.rope.RopeItem.RopeItem;
+import dev.simulated_team.simulated.index.SimDataComponents;
+import dev.simulated_team.simulated.index.SimTags;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
+import net.minecraft.world.ItemInteractionResult;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.context.BlockPlaceContext;
 import net.minecraft.world.item.context.UseOnContext;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
-import net.minecraft.world.level.block.EntityBlock;
 import net.minecraft.world.level.block.Mirror;
 import net.minecraft.world.level.block.Rotation;
-import net.minecraft.world.level.block.entity.BlockEntity;
+import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateDefinition;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
@@ -32,8 +40,13 @@ import java.util.Map;
  * The excavator bucket block.
  * Digging and content live in {@link ExcavatorBucketBlockEntity},
  * joining several blocks into one bucket in {@link BucketGroup}.
+ *
+ * RopeHolderBlock is Create Aeronautics' helper for blocks a rope can be tied
+ * to. It keeps a rope tied when the block becomes part of a contraption. It
+ * includes IBE, Create's helper for blocks with a block entity, which creates
+ * the block entity and makes the game call it every tick.
  */
-public class ExcavatorBucketBlock extends Block implements EntityBlock, IWrenchable {
+public class ExcavatorBucketBlock extends Block implements RopeHolderBlock<ExcavatorBucketBlockEntity>, IWrenchable {
 
     public static final MapCodec<ExcavatorBucketBlock> CODEC = simpleCodec(ExcavatorBucketBlock::new);
 
@@ -99,8 +112,13 @@ public class ExcavatorBucketBlock extends Block implements EntityBlock, IWrencha
     }
 
     @Override
-    public BlockEntity newBlockEntity(BlockPos pos, BlockState state) {
-        return new ExcavatorBucketBlockEntity(pos, state);
+    public Class<ExcavatorBucketBlockEntity> getBlockEntityClass() {
+        return ExcavatorBucketBlockEntity.class;
+    }
+
+    @Override
+    public BlockEntityType<? extends ExcavatorBucketBlockEntity> getBlockEntityType() {
+        return ModBlockEntities.EXCAVATOR_BUCKET.get();
     }
 
     /** A new bucket block may complete, extend or break up a bigger bucket. */
@@ -124,7 +142,8 @@ public class ExcavatorBucketBlock extends Block implements EntityBlock, IWrencha
             && level.getBlockEntity(pos) instanceof ExcavatorBucketBlockEntity bucket) {
             bucket.dropContentAsBroken(serverLevel);
         }
-        super.onRemove(state, level, pos, newState, movedByPiston);
+        // Create's way of removing the block entity. It also tells the plug-in parts that the block is gone.
+        IBE.onRemove(state, level, pos, newState);
         if (removed) {
             for (Direction direction : Direction.values()) {
                 BucketGroup.regroup(level, pos.relative(direction));
@@ -182,6 +201,61 @@ public class ExcavatorBucketBlock extends Block implements EntityBlock, IWrencha
             level.destroyBlock(slicePos, false);
         }
         return InteractionResult.SUCCESS;
+    }
+
+    // -------------------------------------------------------------------- rope
+
+    /**
+     * Right-click with an item. Two items matter here:
+     * the Rope Coupling ties a rope to the bucket, and shears (anything that
+     * cuts Create Aeronautics' ropes) remove it again.
+     *
+     * A rope goes to the teeth of the clicked block's column. If that column
+     * already has a rope, the nearest free column is used. Shears look for a
+     * rope in the same order.
+     */
+    @Override
+    protected ItemInteractionResult useItemOn(ItemStack stack, BlockState state, Level level, BlockPos pos,
+                                              Player player, InteractionHand hand, BlockHitResult hitResult) {
+        if (!(level.getBlockEntity(pos) instanceof ExcavatorBucketBlockEntity bucket)) {
+            return ItemInteractionResult.PASS_TO_DEFAULT_BLOCK_INTERACTION;
+        }
+
+        if (stack.is(SimTags.Items.DESTROYS_ROPE)) {
+            ExcavatorBucketBlockEntity roped = bucket.findHookBlock(true);
+            if (roped == null) {
+                return ItemInteractionResult.PASS_TO_DEFAULT_BLOCK_INTERACTION;
+            }
+            if (level.isClientSide || !(player instanceof ServerPlayer serverPlayer)) {
+                return ItemInteractionResult.SUCCESS;
+            }
+            return RopeHolderBlock.shearRope(this, level, roped.getBlockPos(), serverPlayer);
+        }
+
+        if (stack.getItem() instanceof RopeItem) {
+            // A rope from a bucket to itself makes no sense: ignore the second click.
+            BlockPos firstEnd = stack.get(SimDataComponents.ROPE_FIRST_CONNECTION);
+            if (firstEnd != null && bucket.isPartOfBucket(firstEnd)) {
+                return ItemInteractionResult.CONSUME;
+            }
+            // One rope per block of width: if every column has one, no further rope is started.
+            ExcavatorBucketBlockEntity free = bucket.findHookBlock(false);
+            if (free == null) {
+                return ItemInteractionResult.CONSUME;
+            }
+            BlockPos hook = free.getBlockPos();
+            if (hook.equals(pos)) {
+                // The hook block itself was clicked: the item does its normal work on it.
+                return ItemInteractionResult.PASS_TO_DEFAULT_BLOCK_INTERACTION;
+            }
+            // Another block of the bucket was clicked: let the item act as if the hook block had been.
+            InteractionResult result = stack.useOn(new UseOnContext(player, hand, hitResult.withPosition(hook)));
+            return result.consumesAction()
+                ? ItemInteractionResult.sidedSuccess(level.isClientSide)
+                : ItemInteractionResult.CONSUME;
+        }
+
+        return ItemInteractionResult.PASS_TO_DEFAULT_BLOCK_INTERACTION;
     }
 
     // ------------------------------------------------------------- inspecting

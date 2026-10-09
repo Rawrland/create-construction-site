@@ -4,7 +4,11 @@ import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import dev.rawrland.constructionsite.content.bucket.BucketGroup;
 import dev.rawrland.constructionsite.content.bucket.BucketMount;
+import dev.rawrland.constructionsite.content.bucket.BucketTeeth;
 import dev.rawrland.constructionsite.content.bucket.ExcavatorBucketBlockEntity;
+import dev.simulated_team.simulated.content.blocks.rope.RopeStrandHolderBehavior;
+import dev.simulated_team.simulated.content.blocks.rope.strand.client.ClientRopeStrand;
+import dev.simulated_team.simulated.content.blocks.rope.strand.client.RopeStrandRenderer;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.RenderType;
@@ -18,6 +22,7 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.inventory.InventoryMenu;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.AABB;
+import net.minecraft.world.phys.Vec3;
 
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -41,9 +46,6 @@ public class ExcavatorBucketRenderer implements BlockEntityRenderer<ExcavatorBuc
     private static final ResourceLocation INSIDE = ResourceLocation.withDefaultNamespace("block/yellow_terracotta");
     private static final ResourceLocation STEEL = ResourceLocation.withDefaultNamespace("block/gray_concrete");
 
-    /** How many teeth each block of width has, for 1-high, 2-high and 3-high buckets. */
-    private static final int[] TEETH_PER_BLOCK = {5, 3, 2};
-
     private final BlockRenderDispatcher blockRenderer;
 
     public ExcavatorBucketRenderer(BlockEntityRendererProvider.Context context) {
@@ -59,6 +61,9 @@ public class ExcavatorBucketRenderer implements BlockEntityRenderer<ExcavatorBuc
             || bucket.getLevel().getBlockEntity(bucket.getBlockPos()) != bucket) {
             return;
         }
+        // A rope is drawn by the block that owns it, with Create Aeronautics' own drawing code.
+        // For a block without a rope of its own this draws nothing.
+        RopeStrandRenderer.render(bucket, bucket.getBehavior(), partialTick, poseStack, bufferSource);
         // In a joined bucket only the anchor block draws.
         if (!bucket.isAnchor()) {
             return;
@@ -76,6 +81,7 @@ public class ExcavatorBucketRenderer implements BlockEntityRenderer<ExcavatorBuc
         TextureAtlasSprite steel = atlas.apply(STEEL);
         drawBody(painter, shape, width * 16.0F, outside, atlas.apply(INSIDE), steel);
         drawMount(painter, bucket.getMount(), shape, width * 16.0F, outside, steel);
+        drawRopeRing(painter, bucket, height, width, steel);
         drawContent(painter, bucket, shape, width);
     }
 
@@ -129,13 +135,12 @@ public class ExcavatorBucketRenderer implements BlockEntityRenderer<ExcavatorBuc
         // Teeth along the lip: a thicker base and a thinner tip each.
         // Spread evenly: every gap is the same, and half a gap is left at each edge of a block,
         // so the gap between the teeth of two neighbouring blocks is the same again.
-        int teeth = TEETH_PER_BLOCK[Math.max(0, Math.min(2, Math.round(s) - 1))];
-        float toothWidth = 2.0F * s;
-        float gap = (16.0F - teeth * toothWidth) / teeth;
+        int height = Math.round(s);
+        int teeth = BucketTeeth.perBlock(height);
         int blocksWide = Math.round(totalWidth / 16.0F);
         for (int block = 0; block < blocksWide; block++) {
             for (int tooth = 0; tooth < teeth; tooth++) {
-                float x = block * 16.0F + gap * 0.5F + tooth * (toothWidth + gap);
+                float x = BucketTeeth.toothLeft(block, tooth, height);
                 // The base wraps around the lip: it starts a little below the floor's underside,
                 // so its faces never lie exactly on the floor's faces (that would flicker).
                 p.box(steel, x, -0.25F * s, -2.5F * s, x + 2.0F * s, 1.5F * s, -0.4F * s);
@@ -146,6 +151,32 @@ public class ExcavatorBucketRenderer implements BlockEntityRenderer<ExcavatorBuc
         // A beam along the front edge of the roof.
         float top = 16.0F * s;
         p.box(outside, 0, top, 5.13F * s, totalWidth, top + 1.0F * s, 6.73F * s);
+    }
+
+    // ---------------------------------------------------------- the rope ring
+
+    /** A small steel ring standing on every tooth that has a rope tied to it. */
+    private static void drawRopeRing(Painter p, ExcavatorBucketBlockEntity bucket, int height, int width,
+                                     TextureAtlasSprite steel) {
+        float s = height;
+        for (int column = 0; column < width; column++) {
+            ExcavatorBucketBlockEntity hook = bucket.getHookBlock(column);
+            if (hook == null || !hook.hasRope()) {
+                continue;
+            }
+            float x = BucketTeeth.ringX(column, width, height);
+            float y = BucketTeeth.ringY(height);
+            float z = BucketTeeth.ringZ(height);
+            // Two posts and a bar across them, around the ring's middle point.
+            float half = 0.75F * s;
+            float bar = 0.3F * s;
+            float depth = 0.25F * s;
+            float foot = 0.7F * s;
+            float top = y + 0.6F * s;
+            p.box(steel, x - half, foot, z - depth, x - half + bar, top, z + depth);
+            p.box(steel, x + half - bar, foot, z - depth, x + half, top, z + depth);
+            p.box(steel, x - half, top - bar, z - depth, x + half, top, z + depth);
+        }
     }
 
     // -------------------------------------------------------------- the mount
@@ -300,7 +331,30 @@ public class ExcavatorBucketRenderer implements BlockEntityRenderer<ExcavatorBuc
 
     /** NeoForge asks for the space the drawing takes up. Generous on purpose. */
     public AABB getRenderBoundingBox(ExcavatorBucketBlockEntity bucket) {
-        return new AABB(bucket.getBlockPos()).inflate(bucket.isJoined() ? 10.0 : 1.5);
+        AABB box = new AABB(bucket.getBlockPos()).inflate(bucket.isJoined() ? 10.0 : 1.5);
+        // A rope reaches far beyond the bucket. The block that owns it has to cover it.
+        ClientRopeStrand rope = ownedRope(bucket);
+        if (rope != null && rope.getBounds() != null) {
+            box = box.minmax(rope.getBounds().inflate(3.0));
+        }
+        return box;
+    }
+
+    /** A block that owns a rope is drawn even when the block itself is out of view, or the rope would vanish. */
+    @Override
+    public boolean shouldRenderOffScreen(ExcavatorBucketBlockEntity bucket) {
+        return ownedRope(bucket) != null;
+    }
+
+    @Override
+    public boolean shouldRender(ExcavatorBucketBlockEntity bucket, Vec3 cameraPos) {
+        return ownedRope(bucket) != null || BlockEntityRenderer.super.shouldRender(bucket, cameraPos);
+    }
+
+    /** The rope this block owns in the player's game, or null. Of a rope's two ends, one owns it. */
+    private static ClientRopeStrand ownedRope(ExcavatorBucketBlockEntity bucket) {
+        RopeStrandHolderBehavior holder = bucket.getBehavior();
+        return holder != null && holder.ownsRope() ? holder.getClientStrand() : null;
     }
 
     // ---------------------------------------------------------------- drawing
