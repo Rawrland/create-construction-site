@@ -4,6 +4,7 @@ import com.simibubi.create.api.equipment.goggles.IHaveGoggleInformation;
 import com.simibubi.create.foundation.blockEntity.SmartBlockEntity;
 import com.simibubi.create.foundation.blockEntity.behaviour.BlockEntityBehaviour;
 import com.simibubi.create.foundation.utility.CreateLang;
+import dev.rawrland.constructionsite.content.material.DigCollapse;
 import dev.rawrland.constructionsite.content.material.FallingMaterialEntity;
 import dev.rawrland.constructionsite.registry.ModBlockEntities;
 import dev.rawrland.constructionsite.registry.ModTags;
@@ -30,6 +31,7 @@ import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.ShulkerBoxBlock;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 
 import javax.annotation.Nullable;
@@ -43,8 +45,8 @@ import java.util.Set;
 import java.util.TreeMap;
 
 /**
- * Holds the content of one bucket block, does the digging, and lets the
- * content go again when the bucket is tipped.
+ * Holds the content of one bucket block, does the digging, catches falling
+ * material at its open side, and lets the content go again when the bucket is tipped.
  *
  * Every bucket block holds at most one dug block. A joined bucket is simply
  * several of these working together: its capacity is the number of its blocks.
@@ -117,6 +119,16 @@ public class ExcavatorBucketBlockEntity extends SmartBlockEntity implements Rope
     private static final int RELEASE_INTERVAL_TICKS = 5;
     /** Released blocks appear this far in front of the block centre: in the middle of the next block. */
     private static final double RELEASE_DISTANCE = 1.0;
+
+    // Catching: a bucket with room takes in falling material that reaches its open side.
+
+    /**
+     * Size of the catch zone of one opening block, in blocks: a cube of this
+     * size around the middle of the open face. Falling material whose middle is
+     * inside it is caught. To be tuned in game: too small and fast material
+     * slips past, too large and the bucket takes what only falls past its lip.
+     */
+    private static final double CATCH_ZONE_SIZE = 1.0;
 
     private static final String GOGGLES_TITLE = "gui.goggles.create_construction_site.excavator_bucket.title";
     private static final String GOGGLES_FILL = "gui.goggles.create_construction_site.excavator_bucket.fill";
@@ -530,6 +542,13 @@ public class ExcavatorBucketBlockEntity extends SmartBlockEntity implements Rope
             tickEmptying(serverLevel, tipped, downward);
         }
 
+        // A bucket that is emptying must not swallow what it just let go.
+        // So it only catches while level, or while holding its load after digging tipped.
+        if (!tipped || isHoldingLoad()) {
+            Vec3 localFaceCentre = localCentre.add(Vec3.atLowerCornerOf(facing.getNormal()).scale(0.5));
+            catchFallingMaterial(serverLevel, Sable.HELPER.projectOutOfSubLevel(serverLevel, localFaceCentre));
+        }
+
         boolean pushed = updatePush(worldDigPoint, openSideDirection,
             worldTeethPoint.subtract(worldCentre).normalize());
         if (!pushed) {
@@ -645,6 +664,48 @@ public class ExcavatorBucketBlockEntity extends SmartBlockEntity implements Rope
         changed();
     }
 
+    // --------------------------------------------------------------- catching
+
+    /** True while the bucket keeps its load although it is tipped, because it dug while tipped. */
+    private boolean isHoldingLoad() {
+        ExcavatorBucketBlockEntity anchor = getAnchor();
+        return anchor != null && anchor.holdUntilLevel;
+    }
+
+    /**
+     * Takes in falling material that has reached this block's open face, as
+     * long as the bucket has room. The material is stored like a dug block and
+     * never becomes a block in the world.
+     *
+     * The bucket looks for the material, not the other way round: falling
+     * material lives in the normal world, and this block already knows where
+     * its open face is there.
+     *
+     * @param worldFaceCentre the middle of this block's open face, in the world
+     */
+    private void catchFallingMaterial(ServerLevel serverLevel, Vec3 worldFaceCentre) {
+        AABB catchZone = AABB.ofSize(worldFaceCentre, CATCH_ZONE_SIZE, CATCH_ZONE_SIZE, CATCH_ZONE_SIZE);
+        List<FallingMaterialEntity> found = serverLevel.getEntitiesOfClass(
+            FallingMaterialEntity.class,
+            catchZone,
+            // The middle of the falling block has to be inside the zone, not just a corner of it.
+            entity -> entity.isAlive() && catchZone.contains(entity.getBoundingBox().getCenter())
+        );
+        for (FallingMaterialEntity entity : found) {
+            BlockState carried = entity.getCarriedState();
+            if (carried.isAir()) {
+                continue;
+            }
+            ExcavatorBucketBlockEntity receiver = findFreeMember();
+            if (receiver == null) {
+                // Full: whatever else comes down falls on and lands as usual.
+                return;
+            }
+            receiver.setContent(carried, entity.getCarriedBlockData(), serverLevel.getGameTime());
+            entity.discard();
+        }
+    }
+
     /** The world blocks that this block's part of the dig area currently reaches. */
     private Set<BlockPos> digAreaTargets(ServerLevel serverLevel, Vec3 localCentre, Direction facing) {
         BucketGroup.Axes axes = BucketGroup.axes(getBlockState());
@@ -747,6 +808,9 @@ public class ExcavatorBucketBlockEntity extends SmartBlockEntity implements Rope
         }
 
         receiver.setContent(state, blockEntityData, serverLevel.getGameTime());
+
+        // What stood on the dug block comes down (if switched on in the config).
+        DigCollapse.collapseAbove(serverLevel, target);
 
         // Dug while pointing downward: keep the load until the bucket has been levelled,
         // or it would fall straight back into the hole it came from.

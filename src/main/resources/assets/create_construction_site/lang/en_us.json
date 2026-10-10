@@ -10,6 +10,10 @@
   "gui.goggles.create_construction_site.excavator_bucket.fill": "%s of %s blocks",
   "gui.goggles.create_construction_site.excavator_bucket.empty": "Empty",
   "create_construction_site.configuration.title": "Construction Site Configs",
+  "create_construction_site.configuration.collapseEnabled": "Dug material collapses",
+  "create_construction_site.configuration.collapseEnabled.tooltip": "When a tool of this mod digs a block, the diggable blocks standing directly on top of it fall down. Off: they stay floating, as in plain Minecraft.",
+  "create_construction_site.configuration.collapseMaxHeight": "Collapse height limit",
+  "create_construction_site.configuration.collapseMaxHeight.tooltip": "How many blocks above one dug block fall down at most.",
   "create_construction_site.configuration.section.create_construction_site.common.toml": "Construction Site Configs",
   "create_construction_site.configuration.section.create_construction_site.common.toml.title": "Construction Site Configs"
 }

@@ -29,7 +29,8 @@ import java.util.Collections;
 import java.util.List;
 
 /**
- * A block that was tipped out of a bucket and is on its way to the ground.
+ * A block that is on its way to the ground: tipped out of a bucket, or brought
+ * down by {@link DigCollapse} because a tool dug away the block under it.
  *
  * It falls, and where it lands it becomes the same block again. If there is a
  * lower place right beside its landing place it slides there first, so that a
@@ -80,6 +81,12 @@ public class FallingMaterialEntity extends Entity {
 
     public BlockState getCarriedState() {
         return entityData.get(DATA_BLOCK_STATE);
+    }
+
+    /** Extra data of the carried block, or null if it has none. Used by a bucket that catches this block. */
+    @Nullable
+    public CompoundTag getCarriedBlockData() {
+        return blockData == null ? null : blockData.copy();
     }
 
     private void setCarriedState(BlockState state) {
