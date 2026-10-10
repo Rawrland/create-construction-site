@@ -1,6 +1,7 @@
 package dev.rawrland.constructionsite.registry;
 
 import dev.rawrland.constructionsite.CreateConstructionSite;
+import dev.rawrland.constructionsite.content.blade.BulldozerBladeBlock;
 import dev.rawrland.constructionsite.content.bucket.ExcavatorBucketBlock;
 import net.minecraft.world.level.block.SoundType;
 import net.minecraft.world.level.block.state.BlockBehaviour;
@@ -21,6 +22,17 @@ public final class ModBlocks {
             .strength(3.0F, 6.0F)
             .sound(SoundType.METAL)
             // The model is hollow, so neighbouring block faces must stay visible.
+            .noOcclusion()
+    );
+
+    public static final DeferredBlock<BulldozerBladeBlock> BULLDOZER_BLADE = BLOCKS.registerBlock(
+        "bulldozer_blade",
+        BulldozerBladeBlock::new,
+        BlockBehaviour.Properties.of()
+            .mapColor(MapColor.COLOR_YELLOW)
+            .strength(3.0F, 6.0F)
+            .sound(SoundType.METAL)
+            // The blade is drawn thinner than the block, so neighbouring block faces must stay visible.
             .noOcclusion()
     );
 

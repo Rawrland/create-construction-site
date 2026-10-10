@@ -6,8 +6,9 @@ import com.simibubi.create.foundation.blockEntity.behaviour.BlockEntityBehaviour
 import com.simibubi.create.foundation.utility.CreateLang;
 import dev.rawrland.constructionsite.content.material.DigCollapse;
 import dev.rawrland.constructionsite.content.material.FallingMaterialEntity;
+import dev.rawrland.constructionsite.content.tool.PushTracker;
+import dev.rawrland.constructionsite.content.tool.WorldDig;
 import dev.rawrland.constructionsite.registry.ModBlockEntities;
-import dev.rawrland.constructionsite.registry.ModTags;
 import dev.ryanhcode.sable.Sable;
 import dev.ryanhcode.sable.sublevel.ServerSubLevel;
 import dev.simulated_team.simulated.content.blocks.rope.RopeStrandHolderBehavior;
@@ -22,7 +23,6 @@ import net.minecraft.nbt.NbtUtils;
 import net.minecraft.nbt.Tag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
-import net.minecraft.world.Clearable;
 import net.minecraft.world.Container;
 import net.minecraft.world.Containers;
 import net.minecraft.world.item.ItemStack;
@@ -85,17 +85,7 @@ public class ExcavatorBucketBlockEntity extends SmartBlockEntity implements Rope
     /** Height of the teeth samples, from the block centre: just above the bottom of the block. */
     private static final double TEETH_HEIGHT = -0.45;
 
-    /**
-     * How the bucket moves is judged over this many ticks (a quarter of a second),
-     * not from one tick to the next. That way small bumps and shaking cancel out. Set by the spec.
-     */
-    private static final int PUSH_WINDOW_TICKS = 5;
-
-    /**
-     * How far (in blocks) the dig point must have moved over that time to count as moving at all.
-     * Low enough for a slowly turning bearing. To be tuned in game.
-     */
-    private static final double MIN_PUSH_DISTANCE = 0.015;
+    // How the bucket moves is judged by a PushTracker, over a quarter of a second.
 
     /** Pushing: at least this share of the movement must point out of the open side. */
     private static final double PUSH_SHARE = 0.3;
@@ -170,8 +160,11 @@ public class ExcavatorBucketBlockEntity extends SmartBlockEntity implements Rope
     /** Width of the bucket this block belongs to, in blocks. */
     private int groupWidth = 1;
 
-    /** Where the mounting ears are shown. All blocks of a bucket hold the same value; the anchor's is the one drawn. */
-    private BucketMount mount = BucketMount.TOP;
+    /**
+     * Where the mounting ears are shown. A new bucket shows them on the back; the wrench moves or hides them.
+     * All blocks of a bucket hold the same value; the anchor's is the one drawn.
+     */
+    private BucketMount mount = BucketMount.BACK;
 
     /**
      * Set when the bucket digs while tipped downward. It then keeps its content
@@ -188,8 +181,8 @@ public class ExcavatorBucketBlockEntity extends SmartBlockEntity implements Rope
 
     // ------------------------------------------------------- not saved, per tick
 
-    /** Where this block's dig point was in the world over the last ticks. Newest first; null until known. */
-    private final Vec3[] recentWorldDigPoints = new Vec3[PUSH_WINDOW_TICKS + 1];
+    /** Follows this block's dig point in the world and tells how it moved over the last ticks. */
+    private final PushTracker pushTracker = new PushTracker();
 
     /** Set after the first tick on a contraption, where joining is checked once more. */
     private boolean regroupedOnContraption;
@@ -280,7 +273,7 @@ public class ExcavatorBucketBlockEntity extends SmartBlockEntity implements Rope
         return mount;
     }
 
-    /** Switches the whole bucket to the next mount position: top, back, none, top, ... */
+    /** Switches the whole bucket to the next mount position: back, none, top, back, ... */
     public BucketMount cycleGroupMount() {
         BucketMount next = mount.next();
         for (ExcavatorBucketBlockEntity member : getGroupMembers()) {
@@ -748,43 +741,22 @@ public class ExcavatorBucketBlockEntity extends SmartBlockEntity implements Rope
      * Must run every tick, full or empty, so the record has no gaps.
      */
     private boolean updatePush(Vec3 worldDigPoint, Vec3 openSideDirection, Vec3 teethDirection) {
-        // Shift the record by one tick and put the newest position in front.
-        System.arraycopy(recentWorldDigPoints, 0, recentWorldDigPoints, 1, PUSH_WINDOW_TICKS);
-        recentWorldDigPoints[0] = worldDigPoint;
-
-        Vec3 oldest = recentWorldDigPoints[PUSH_WINDOW_TICKS];
-        if (oldest == null) {
+        pushTracker.update(worldDigPoint);
+        if (!pushTracker.isMoving()) {
             return false;
         }
-        // Where the dig point went over the whole window. Back-and-forth shaking cancels out here.
-        Vec3 movement = worldDigPoint.subtract(oldest);
-        double distance = movement.length();
-        if (distance < MIN_PUSH_DISTANCE) {
-            return false;
-        }
-        double forward = movement.dot(openSideDirection);
-        double towardTeeth = movement.dot(teethDirection);
+        // How much of the movement points out of the open side, and toward the teeth edge.
+        double forward = pushTracker.share(openSideDirection);
+        double towardTeeth = pushTracker.share(teethDirection);
 
-        boolean pushing = forward > PUSH_SHARE * distance;
-        boolean scooping = towardTeeth > SCOOP_SHARE * distance && forward > -SCOOP_MAX_BACKWARD_SHARE * distance;
+        boolean pushing = forward > PUSH_SHARE;
+        boolean scooping = towardTeeth > SCOOP_SHARE && forward > -SCOOP_MAX_BACKWARD_SHARE;
         return pushing || scooping;
     }
 
     private void tryDig(ServerLevel serverLevel, BlockPos target, boolean tipped) {
-        if (serverLevel.isOutsideBuildHeight(target) || !serverLevel.isLoaded(target)) {
-            return;
-        }
-        // Only dig the normal world, never blocks that belong to a contraption.
-        if (Sable.HELPER.getContaining(serverLevel, target) != null) {
-            return;
-        }
-
-        BlockState state = serverLevel.getBlockState(target);
-        if (state.isAir() || !state.is(ModTags.BUCKET_DIGGABLE)) {
-            return;
-        }
-        // Negative destroy speed means unbreakable (bedrock and the like), whatever the tag says.
-        if (state.getDestroySpeed(serverLevel, target) < 0) {
+        // Diggable, in the normal world, not unbreakable: the rules shared by all tools.
+        if (!WorldDig.canTake(serverLevel, target)) {
             return;
         }
 
@@ -794,20 +766,13 @@ public class ExcavatorBucketBlockEntity extends SmartBlockEntity implements Rope
             return;
         }
 
-        // Keep the block's extra data, then empty it so nothing spills when it is removed.
-        CompoundTag blockEntityData = null;
-        BlockEntity blockEntity = serverLevel.getBlockEntity(target);
-        if (blockEntity != null) {
-            blockEntityData = blockEntity.saveWithId(serverLevel.registryAccess());
-            Clearable.tryClear(blockEntity);
-        }
-
-        // false = no item drops. Break particles and sound still play.
-        if (!serverLevel.destroyBlock(target, false)) {
+        // Take the block with its extra data. No item drops; break particles and sound still play.
+        WorldDig.DugBlock dug = WorldDig.take(serverLevel, target, true);
+        if (dug == null) {
             return;
         }
 
-        receiver.setContent(state, blockEntityData, serverLevel.getGameTime());
+        receiver.setContent(dug.state(), dug.blockEntityData(), serverLevel.getGameTime());
 
         // What stood on the dug block comes down (if switched on in the config).
         DigCollapse.collapseAbove(serverLevel, target);

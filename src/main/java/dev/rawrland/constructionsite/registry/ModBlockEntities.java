@@ -1,6 +1,7 @@
 package dev.rawrland.constructionsite.registry;
 
 import dev.rawrland.constructionsite.CreateConstructionSite;
+import dev.rawrland.constructionsite.content.blade.BulldozerBladeBlockEntity;
 import dev.rawrland.constructionsite.content.bucket.ExcavatorBucketBlockEntity;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.world.level.block.entity.BlockEntityType;
@@ -16,6 +17,11 @@ public final class ModBlockEntities {
     public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<ExcavatorBucketBlockEntity>> EXCAVATOR_BUCKET =
         BLOCK_ENTITY_TYPES.register("excavator_bucket", () -> BlockEntityType.Builder.of(
             ExcavatorBucketBlockEntity::new, ModBlocks.EXCAVATOR_BUCKET.get()
+        ).build(null));
+
+    public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<BulldozerBladeBlockEntity>> BULLDOZER_BLADE =
+        BLOCK_ENTITY_TYPES.register("bulldozer_blade", () -> BlockEntityType.Builder.of(
+            BulldozerBladeBlockEntity::new, ModBlocks.BULLDOZER_BLADE.get()
         ).build(null));
 
     private ModBlockEntities() {

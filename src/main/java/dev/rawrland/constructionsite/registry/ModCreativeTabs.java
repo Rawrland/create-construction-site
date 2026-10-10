@@ -19,7 +19,10 @@ public final class ModCreativeTabs {
         () -> CreativeModeTab.builder()
             .title(Component.translatable("itemGroup." + CreateConstructionSite.MODID))
             .icon(() -> ModItems.EXCAVATOR_BUCKET.get().getDefaultInstance())
-            .displayItems((parameters, output) -> output.accept(ModItems.EXCAVATOR_BUCKET.get()))
+            .displayItems((parameters, output) -> {
+                output.accept(ModItems.EXCAVATOR_BUCKET.get());
+                output.accept(ModItems.BULLDOZER_BLADE.get());
+            })
             .build()
     );
 

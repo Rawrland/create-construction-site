@@ -1,5 +1,6 @@
 package dev.rawrland.constructionsite;
 
+import dev.rawrland.constructionsite.client.BulldozerBladeRenderer;
 import dev.rawrland.constructionsite.client.ExcavatorBucketRenderer;
 import dev.rawrland.constructionsite.client.FallingMaterialRenderer;
 import dev.rawrland.constructionsite.registry.ModBlockEntities;
@@ -25,6 +26,7 @@ public class CreateConstructionSiteClient {
 
     private static void registerRenderers(EntityRenderersEvent.RegisterRenderers event) {
         event.registerBlockEntityRenderer(ModBlockEntities.EXCAVATOR_BUCKET.get(), ExcavatorBucketRenderer::new);
+        event.registerBlockEntityRenderer(ModBlockEntities.BULLDOZER_BLADE.get(), BulldozerBladeRenderer::new);
         event.registerEntityRenderer(ModEntities.FALLING_MATERIAL.get(), FallingMaterialRenderer::new);
     }
 }

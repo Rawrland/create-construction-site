@@ -1,14 +1,9 @@
 package dev.rawrland.constructionsite.content.material;
 
 import dev.rawrland.constructionsite.Config;
-import dev.rawrland.constructionsite.registry.ModTags;
-import dev.ryanhcode.sable.Sable;
+import dev.rawrland.constructionsite.content.tool.WorldDig;
 import net.minecraft.core.BlockPos;
-import net.minecraft.nbt.CompoundTag;
 import net.minecraft.server.level.ServerLevel;
-import net.minecraft.world.Clearable;
-import net.minecraft.world.level.block.entity.BlockEntity;
-import net.minecraft.world.level.block.state.BlockState;
 
 /**
  * Brings down the material that stood on a block a tool has just dug away.
@@ -42,36 +37,13 @@ public final class DigCollapse {
         // Bottom to top, all in this tick, so the column falls as one piece.
         for (int step = 1; step <= maxHeight; step++) {
             BlockPos pos = dug.above(step);
-            if (level.isOutsideBuildHeight(pos) || !level.isLoaded(pos)) {
+            // Taken without particles or sound: a whole column of break sounds would be noise.
+            WorldDig.DugBlock block = WorldDig.take(level, pos, false);
+            if (block == null) {
+                // Not diggable (air included), part of a contraption, or outside the world: the column ends here.
                 return;
             }
-            // Only the normal world collapses, never blocks that belong to a contraption.
-            if (Sable.HELPER.getContaining(level, pos) != null) {
-                return;
-            }
-
-            BlockState state = level.getBlockState(pos);
-            if (state.isAir() || !state.is(ModTags.BUCKET_DIGGABLE)) {
-                return;
-            }
-            // Negative destroy speed means unbreakable, whatever the tag says.
-            if (state.getDestroySpeed(level, pos) < 0) {
-                return;
-            }
-
-            // Keep the block's extra data, then empty it so nothing spills when it is removed.
-            CompoundTag blockEntityData = null;
-            BlockEntity blockEntity = level.getBlockEntity(pos);
-            if (blockEntity != null) {
-                blockEntityData = blockEntity.saveWithId(level.registryAccess());
-                Clearable.tryClear(blockEntity);
-            }
-
-            // Removed without drops, particles or sound: a whole column of break sounds would be noise.
-            if (!level.removeBlock(pos, false)) {
-                return;
-            }
-            FallingMaterialEntity.spawn(level, pos, state, blockEntityData);
+            FallingMaterialEntity.spawn(level, pos, block.state(), block.blockEntityData());
         }
     }
 }
