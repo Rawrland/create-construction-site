@@ -2,6 +2,7 @@
   "replace": false,
   "values": [
     "create_construction_site:excavator_bucket",
-    "create_construction_site:bulldozer_blade"
+    "create_construction_site:bulldozer_blade",
+    "create_construction_site:dump_body"
   ]
 }

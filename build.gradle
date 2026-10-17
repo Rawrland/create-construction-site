@@ -130,21 +130,38 @@ dependencies {
     implementation("dev.engine-room.flywheel:flywheel-neoforge-${minecraft_version}:${flywheel_version}")
     implementation("com.tterrag.registrate:Registrate:${registrate_version}")
 
-    // --- Sable (physics engine behind Aeronautics) ---
-    implementation("dev.ryanhcode.sable:sable-neoforge-${minecraft_version}:${sable_version}") {
-        exclude group: 'foundry.veil'
-        exclude group: 'com.tterrag.registrate'
-    }
-
-    // --- Create Aeronautics: Simulated (core), Aeronautics, Offroad ---
-    implementation("dev.simulated_team.simulated:simulated-neoforge-${minecraft_version}:${aeronautics_version}") {
-        transitive = false
-    }
-    implementation("dev.eriksonn.aeronautics:aeronautics-neoforge-${minecraft_version}:${aeronautics_version}") {
-        transitive = false
-    }
-    implementation("dev.ryanhcode.offroad:offroad-neoforge-${minecraft_version}:${aeronautics_version}") {
-        transitive = false
+    // --- Create Aeronautics: Sable (physics), Simulated (core), Aeronautics, Offroad ---
+    // Optional for players (see neoforge.mods.toml). They are always needed to compile the
+    // compat/aeronautics package, but only put into the game started from here when
+    // with_aeronautics is true (gradle.properties). Test without them:
+    //     gradlew runClient -Pwith_aeronautics=false
+    def aeronautics = [
+        "dev.ryanhcode.sable:sable-neoforge-${minecraft_version}:${sable_version}",
+        "dev.simulated_team.simulated:simulated-neoforge-${minecraft_version}:${aeronautics_version}",
+        "dev.eriksonn.aeronautics:aeronautics-neoforge-${minecraft_version}:${aeronautics_version}",
+        "dev.ryanhcode.offroad:offroad-neoforge-${minecraft_version}:${aeronautics_version}",
+    ]
+    def withAeronautics = (project.findProperty("with_aeronautics") ?: "true").toString().toBoolean()
+    aeronautics.each { coordinates ->
+        def sable = coordinates.startsWith("dev.ryanhcode.sable:")
+        compileOnly(coordinates) {
+            if (sable) {
+                exclude group: 'foundry.veil'
+                exclude group: 'com.tterrag.registrate'
+            } else {
+                transitive = false
+            }
+        }
+        if (withAeronautics) {
+            localRuntime(coordinates) {
+                if (sable) {
+                    exclude group: 'foundry.veil'
+                    exclude group: 'com.tterrag.registrate'
+                } else {
+                    transitive = false
+                }
+            }
+        }
     }
 
     // Example optional mod dependency with JEI
@@ -206,6 +223,12 @@ publishing {
             url "file://${project.projectDir}/repo"
         }
     }
+}
+
+// The test stations (resourcepacks/test_stations*) are for the game started from here only:
+// they are not put into the finished mod file. See docs/notes/test-stations.md.
+tasks.named('jar', Jar) {
+    exclude 'resourcepacks/test_stations/**', 'resourcepacks/test_stations_aeronautics/**'
 }
 
 tasks.withType(JavaCompile).configureEach {

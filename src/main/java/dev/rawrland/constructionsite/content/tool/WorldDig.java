@@ -1,7 +1,8 @@
 package dev.rawrland.constructionsite.content.tool;
 
+import dev.rawrland.constructionsite.compat.Mods;
+import dev.rawrland.constructionsite.compat.aeronautics.SableWorld;
 import dev.rawrland.constructionsite.registry.ModTags;
-import dev.ryanhcode.sable.Sable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.server.level.ServerLevel;
@@ -37,7 +38,7 @@ public final class WorldDig {
             return false;
         }
         // Only the normal world, never blocks that belong to a contraption.
-        if (Sable.HELPER.getContaining(level, pos) != null) {
+        if (isOnSimulatedContraption(level, pos)) {
             return false;
         }
         BlockState state = level.getBlockState(pos);
@@ -46,6 +47,28 @@ public final class WorldDig {
         }
         // Negative destroy speed means unbreakable (bedrock and the like), whatever the tag says.
         return state.getDestroySpeed(level, pos) >= 0;
+    }
+
+    /**
+     * True if this place belongs to a Create Aeronautics simulated contraption, not
+     * to the normal world. Always false without Create Aeronautics, which is the
+     * only thing that makes such contraptions.
+     */
+    public static boolean isOnSimulatedContraption(ServerLevel level, BlockPos pos) {
+        return Mods.AERONAUTICS && SableWorld.isOnSubLevel(level, pos);
+    }
+
+    /**
+     * True if the block at this place would stop a tool that cannot take it:
+     * something solid. Air, water, grass and other blocks a tool simply moves
+     * through do not count, and neither do blocks without collision such as torches.
+     */
+    public static boolean isObstacle(ServerLevel level, BlockPos pos) {
+        if (level.isOutsideBuildHeight(pos) || !level.isLoaded(pos)) {
+            return false;
+        }
+        BlockState state = level.getBlockState(pos);
+        return !state.isAir() && !state.canBeReplaced() && !state.getCollisionShape(level, pos).isEmpty();
     }
 
     /**

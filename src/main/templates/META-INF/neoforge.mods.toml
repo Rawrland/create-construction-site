@@ -94,26 +94,34 @@ Realistic earthmoving and concrete work for Create Aeronautics: shovels, bulldoz
     ordering="AFTER"
     side="BOTH"
 
-# Sable
+# Sable (optional: only with Create Aeronautics; the version range still applies when installed)
 [[dependencies.${mod_id}]]
     modId="sable"
-    type="required"
+    type="optional"
     versionRange="[2.0.0,3.0.0)"
     ordering="AFTER"
     side="BOTH"
 
-# Simulated: the part of Create Aeronautics that has the ropes
+# Simulated: the part of Create Aeronautics that has the ropes (optional)
 [[dependencies.${mod_id}]]
     modId="simulated"
-    type="required"
+    type="optional"
     versionRange="[1.3.0,)"
     ordering="AFTER"
     side="BOTH"
 
-# Create Aeronautics
+# Create Aeronautics (optional)
 [[dependencies.${mod_id}]]
     modId="aeronautics"
-    type="required"
+    type="optional"
+    versionRange="[1.3.0,)"
+    ordering="AFTER"
+    side="BOTH"
+
+# Offroad: the part of Create Aeronautics with wheel mounts and tires (optional; used in a Ponder scene)
+[[dependencies.${mod_id}]]
+    modId="offroad"
+    type="optional"
     versionRange="[1.3.0,)"
     ordering="AFTER"
     side="BOTH"

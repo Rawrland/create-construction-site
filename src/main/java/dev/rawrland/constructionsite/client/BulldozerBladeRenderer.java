@@ -7,30 +7,29 @@ import dev.rawrland.constructionsite.content.blade.BladeMount;
 import dev.rawrland.constructionsite.content.blade.BladePile;
 import dev.rawrland.constructionsite.content.blade.BulldozerBladeBlockEntity;
 import dev.rawrland.constructionsite.content.bucket.BucketGroup;
-import net.minecraft.client.Minecraft;
+import net.createmod.ponder.api.level.PonderLevel;
+import net.createmod.catnip.animation.AnimationTickHolder;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.block.BlockRenderDispatcher;
 import net.minecraft.client.renderer.blockentity.BlockEntityRenderer;
 import net.minecraft.client.renderer.blockentity.BlockEntityRendererProvider;
 import net.minecraft.client.renderer.texture.OverlayTexture;
-import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.core.Vec3i;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.inventory.InventoryMenu;
+import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.AABB;
 
 import java.util.List;
-import java.util.function.Function;
 
 /**
  * Draws bulldozer blades.
  *
  * Blade blocks have no block model of their own. The anchor block of each blade
  * (bottom left; for a single blade, the block itself) draws the whole blade in
- * code as one stretched shape, so the number of faces is the same for a blade
- * 1 block wide and one 9 blocks wide. It also draws the load as a pile of
- * blocks in front of the blade.
+ * code: a few boxes on the grid, each face one connected surface with a frame
+ * around its edge (see {@link ToolPainter}), as Create's connected blocks look. It also draws the load as
+ * a pile of blocks in front of the blade.
  *
  * All drawing below uses the blade's own coordinates, in pixels (1/16 block):
  * x runs along the cutting edge, y up from the bottom, z from the working face
@@ -38,19 +37,20 @@ import java.util.function.Function;
  */
 public class BulldozerBladeRenderer implements BlockEntityRenderer<BulldozerBladeBlockEntity> {
 
-    private static final ResourceLocation BODY = ResourceLocation.withDefaultNamespace("block/yellow_concrete");
-    private static final ResourceLocation STEEL = ResourceLocation.withDefaultNamespace("block/gray_concrete");
-
     /**
-     * The side profile of the working face for a 1-high blade, as (z, y) points
-     * from the bottom up: the cutting edge leans back, the face stands straight,
-     * the lip leans forward again. Three flat strips that read as a curve.
+     * The side profile for a 1-high blade, in pixels: z from the working face
+     * backward, y up. Three boxes across the whole width:
+     * the dark steel cutting edge at the bottom (z 0 to 3, y 0 to 4), the plate in the
+     * middle (z 3 to 5, y 4 to 12) and the lip at the top (z 0 to 3, y 12 to 16).
      */
-    private static final float[][] PROFILE = {
-        {0.0F, 0.0F}, {3.0F, 4.0F}, {3.0F, 12.0F}, {0.0F, 16.0F}
-    };
-    /** Thickness of the plate for a 1-high blade, measured toward the back. */
-    private static final float PLATE = 2.0F;
+    private static final float EDGE_DEPTH = 3.0F;
+    private static final float EDGE_TOP = 4.0F;
+    private static final float PLATE_BACK = 5.0F;
+    private static final float LIP_BOTTOM = 12.0F;
+    /** Thickness of the end plates at both ends of the blade, for a 1-high blade. */
+    private static final float END_PLATE = 1.0F;
+    /** How far the stiffening ribs stand out behind the plate. Less than the mount's beam. */
+    private static final float RIB_DEPTH = 1.0F;
 
     /**
      * A blade is always one block deep, however high it is. So the plate's shape
@@ -92,15 +92,9 @@ public class BulldozerBladeRenderer implements BlockEntityRenderer<BulldozerBlad
         int width = blade.getGroupWidth();
         BucketGroup.Axes axes = BladeGroup.axes(blade.getBlockState());
 
-        Function<ResourceLocation, TextureAtlasSprite> atlas =
-            Minecraft.getInstance().getTextureAtlas(InventoryMenu.BLOCK_ATLAS);
-        TextureAtlasSprite body = atlas.apply(BODY);
-        TextureAtlasSprite steel = atlas.apply(STEEL);
-
         VertexConsumer buffer = bufferSource.getBuffer(RenderType.entityCutoutNoCull(InventoryMenu.BLOCK_ATLAS));
-        Painter painter = new Painter(buffer, poseStack.last(), axes, packedLight);
-        drawPlate(painter, height, width * 16.0F, body, steel);
-        drawMount(painter, blade.getMount(), height, width * 16.0F, body, steel);
+        ToolPainter painter = new ToolPainter(buffer, poseStack.last(), axes, packedLight);
+        drawBlade(painter, height, width, blade.getMount());
 
         // The pile comes last: drawing blocks switches to other buffers, and the
         // painter's buffer must not be used any more after that.
@@ -109,38 +103,46 @@ public class BulldozerBladeRenderer implements BlockEntityRenderer<BulldozerBlad
 
     // --------------------------------------------------------------- the blade
 
-    /** The plate: three strips, each with a front, a back and two end faces, plus the narrow edges at the bottom and the top. 14 faces. */
-    private static void drawPlate(Painter p, float s, float totalWidth, TextureAtlasSprite body, TextureAtlasSprite steel) {
-        float d = depthScale(s);
-        float t = PLATE * d;
-        int last = PROFILE.length - 1;
-        for (int i = 0; i < last; i++) {
-            float z0 = PROFILE[i][0] * d, y0 = PROFILE[i][1] * s;
-            float z1 = PROFILE[i + 1][0] * d, y1 = PROFILE[i + 1][1] * s;
-            // The direction a strip faces: at right angles to its own line, toward the front.
-            float dz = z1 - z0, dy = y1 - y0;
-            float length = (float) Math.sqrt(dz * dz + dy * dy);
-            float nz = -dy / length, ny = dz / length;
-            // The lowest strip is the cutting edge, in steel.
-            TextureAtlasSprite front = i == 0 ? steel : body;
+    /**
+     * The empty blade itself with its mount, in the given size. Used for placed
+     * blades and for the blade item (see {@link ToolItemRenderer}), so both
+     * always look the same.
+     */
+    static void drawBlade(ToolPainter painter, int height, int width, BladeMount mount) {
+        ToolPainter.Material painted = ToolPainter.framed(ToolPainter.PAINTED);
+        ToolPainter.Material steel = ToolPainter.framed(ToolPainter.DARK_STEEL);
+        ToolPainter.Material dark = ToolPainter.plain(ToolPainter.DARK_STEEL);
+        drawPlate(painter, height, width * 16.0F, painted, steel);
+        drawMount(painter, mount, height, width * 16.0F, painted, dark);
+    }
 
-            p.flatQuad(front, 0, ny, nz,
-                0, y0, z0, totalWidth, y0, z0, totalWidth, y1, z1, 0, y1, z1);
-            p.flatQuad(body, 0, -ny, -nz,
-                0, y0, z0 + t, totalWidth, y0, z0 + t, totalWidth, y1, z1 + t, 0, y1, z1 + t);
-            // The two ends of this strip.
-            p.flatQuad(front, -1, 0, 0,
-                0, y0, z0, 0, y0, z0 + t, 0, y1, z1 + t, 0, y1, z1);
-            p.flatQuad(front, 1, 0, 0,
-                totalWidth, y0, z0, totalWidth, y0, z0 + t, totalWidth, y1, z1 + t, totalWidth, y1, z1);
+    /**
+     * The blade itself: cutting edge, plate and lip, each a box across the whole
+     * width; a dark steel end plate closing each end; and upright ribs on the back
+     * of the plate, one in the middle of every block, that stiffen it.
+     */
+    private static void drawPlate(ToolPainter p, float s, float totalWidth,
+                                  ToolPainter.Material painted, ToolPainter.Material steel) {
+        float d = depthScale(s);
+        float end = END_PLATE * s;
+        float plateBack = PLATE_BACK * d;
+        p.box(steel, end, 0, 0, totalWidth - end, EDGE_TOP * s, EDGE_DEPTH * d);
+        p.box(painted, end, EDGE_TOP * s, EDGE_DEPTH * d, totalWidth - end, LIP_BOTTOM * s, plateBack);
+        p.box(painted, end, LIP_BOTTOM * s, 0, totalWidth - end, 16.0F * s, EDGE_DEPTH * d);
+
+        // End plates: the whole side outline of the blade, filled in.
+        for (float x : new float[] {0, totalWidth - end}) {
+            p.box(steel, x, 0, 0, x + end, 16.0F * s, plateBack);
         }
-        // The narrow edge along the bottom and the one along the top.
-        float zBottom = PROFILE[0][0] * d, yBottom = PROFILE[0][1] * s;
-        float zTop = PROFILE[last][0] * d, yTop = PROFILE[last][1] * s;
-        p.flatQuad(steel, 0, -1, 0,
-            0, yBottom, zBottom, totalWidth, yBottom, zBottom, totalWidth, yBottom, zBottom + t, 0, yBottom, zBottom + t);
-        p.flatQuad(body, 0, 1, 0,
-            0, yTop, zTop, totalWidth, yTop, zTop, totalWidth, yTop, zTop + t, 0, yTop, zTop + t);
+
+        // Ribs: shallower than the mount's beam, so their back faces never lie on the beam's.
+        int blocks = Math.round(totalWidth / 16.0F);
+        float ribHalf = 0.75F * s;
+        for (int block = 0; block < blocks; block++) {
+            float middle = block * 16.0F + 8.0F;
+            p.box(painted, middle - ribHalf, EDGE_TOP * s, plateBack,
+                middle + ribHalf, LIP_BOTTOM * s, plateBack + RIB_DEPTH * d);
+        }
     }
 
     /**
@@ -153,13 +155,13 @@ public class BulldozerBladeRenderer implements BlockEntityRenderer<BulldozerBlad
      * vehicle narrower than the blade), or near the two ends of the blade (for
      * a vehicle as wide as the blade). On a blade one block wide both look the same.
      */
-    private static void drawMount(Painter p, BladeMount mount, float s, float totalWidth,
-                                  TextureAtlasSprite body, TextureAtlasSprite steel) {
+    private static void drawMount(ToolPainter p, BladeMount mount, float s, float totalWidth,
+                                  ToolPainter.Material body, ToolPainter.Material steel) {
         if (mount == BladeMount.NONE) {
             return;
         }
         float d = depthScale(s);
-        float plateBack = (PROFILE[1][0] + PLATE) * d;
+        float plateBack = PLATE_BACK * d;
         // A blade is always one block deep, however high it is.
         float blockBack = 16.0F;
         float middle = 8.0F * s;
@@ -200,7 +202,7 @@ public class BulldozerBladeRenderer implements BlockEntityRenderer<BulldozerBlad
             return;
         }
         int height = blade.getGroupHeight();
-        long gameTime = blade.getLevel().getGameTime();
+        long now = clock(blade.getLevel());
         List<List<BulldozerBladeBlockEntity.Stored>> columns = blade.getColumnContents();
         Vec3i right = axes.right().getNormal();
         Vec3i up = axes.up().getNormal();
@@ -213,7 +215,7 @@ public class BulldozerBladeRenderer implements BlockEntityRenderer<BulldozerBlad
                 int[] slot = BladePile.slot(height, index);
 
                 // How much of the way into the pile is still to go: 1 when just taken, 0 when arrived.
-                float age = (float) (gameTime - block.takenAt()) + partialTick;
+                float age = (float) (now - block.takenAt()) + partialTick;
                 float progress = Math.max(0.0F, Math.min(1.0F, age / SLIDE_TICKS));
                 float toGo = (1.0F - progress) * (1.0F - progress);
 
@@ -237,83 +239,20 @@ public class BulldozerBladeRenderer implements BlockEntityRenderer<BulldozerBlad
         }
     }
 
+    /**
+     * The time the slide-in of taken blocks is measured in. In a world that is the
+     * game time, which is also what the blade stores when it takes a block. Create's
+     * Ponder scenes pause the game, so there the game time stands still; a scene
+     * counts in Ponder's own ticks instead, and stores those (see ToolSceneHelper).
+     */
+    public static long clock(Level level) {
+        return level instanceof PonderLevel ? AnimationTickHolder.getTicks(level) : level.getGameTime();
+    }
+
     // ------------------------------------------------- telling the game what to draw
 
     /** NeoForge asks for the space the drawing takes up: the whole blade and its pile, not just the anchor block. */
     public AABB getRenderBoundingBox(BulldozerBladeBlockEntity blade) {
         return new AABB(blade.getBlockPos()).inflate(blade.isJoined() ? BladeGroup.MAX_WIDTH + 1.0 : 4.0);
-    }
-
-    // ---------------------------------------------------------------- drawing
-
-    /**
-     * Turns blade coordinates into vertices. It knows which way the blade is
-     * turned, so the drawing code above never has to think about directions.
-     */
-    private static final class Painter {
-
-        private final VertexConsumer buffer;
-        private final PoseStack.Pose pose;
-        private final int packedLight;
-        // The blade's own directions as plain numbers: right, up, back.
-        private final float rx, ry, rz, ux, uy, uz, bx, by, bz;
-
-        Painter(VertexConsumer buffer, PoseStack.Pose pose, BucketGroup.Axes axes, int packedLight) {
-            this.buffer = buffer;
-            this.pose = pose;
-            this.packedLight = packedLight;
-            Vec3i r = axes.right().getNormal(), u = axes.up().getNormal(), b = axes.back().getNormal();
-            rx = r.getX();
-            ry = r.getY();
-            rz = r.getZ();
-            ux = u.getX();
-            uy = u.getY();
-            uz = u.getZ();
-            bx = b.getX();
-            by = b.getY();
-            bz = b.getZ();
-        }
-
-        /** One vertex. x, y, z in blade pixels; the normal in blade directions. */
-        void vertex(float x, float y, float z, float u, float v, float nx, float ny, float nz) {
-            // From the anchor block's front bottom left corner, measured from the block's centre.
-            float cx = x / 16.0F - 0.5F;
-            float cy = y / 16.0F - 0.5F;
-            float cz = z / 16.0F - 0.5F;
-            float worldX = 0.5F + cx * rx + cy * ux + cz * bx;
-            float worldY = 0.5F + cx * ry + cy * uy + cz * by;
-            float worldZ = 0.5F + cx * rz + cy * uz + cz * bz;
-            float normalX = nx * rx + ny * ux + nz * bx;
-            float normalY = nx * ry + ny * uy + nz * by;
-            float normalZ = nx * rz + ny * uz + nz * bz;
-            buffer.addVertex(pose, worldX, worldY, worldZ)
-                .setColor(255, 255, 255, 255)
-                .setUv(u, v)
-                .setOverlay(OverlayTexture.NO_OVERLAY)
-                .setLight(packedLight)
-                .setNormal(pose, normalX, normalY, normalZ);
-        }
-
-        /** A four-cornered face in one flat colour: the colour in the middle of the given texture. */
-        void flatQuad(TextureAtlasSprite sprite, float nx, float ny, float nz,
-                      float x1, float y1, float z1, float x2, float y2, float z2,
-                      float x3, float y3, float z3, float x4, float y4, float z4) {
-            float u = (sprite.getU0() + sprite.getU1()) * 0.5F;
-            float v = (sprite.getV0() + sprite.getV1()) * 0.5F;
-            vertex(x1, y1, z1, u, v, nx, ny, nz);
-            vertex(x2, y2, z2, u, v, nx, ny, nz);
-            vertex(x3, y3, z3, u, v, nx, ny, nz);
-            vertex(x4, y4, z4, u, v, nx, ny, nz);
-        }
-
-        /** A box with its sides along the blade's directions. */
-        void box(TextureAtlasSprite sprite, float x0, float y0, float z0, float x1, float y1, float z1) {
-            flatQuad(sprite, 0, 0, -1, x0, y0, z0, x1, y0, z0, x1, y1, z0, x0, y1, z0);
-            flatQuad(sprite, 0, 0, 1, x0, y0, z1, x1, y0, z1, x1, y1, z1, x0, y1, z1);
-            flatQuad(sprite, -1, 0, 0, x0, y0, z0, x0, y0, z1, x0, y1, z1, x0, y1, z0);
-            flatQuad(sprite, 1, 0, 0, x1, y0, z0, x1, y0, z1, x1, y1, z1, x1, y1, z0);
-            flatQuad(sprite, 0, -1, 0, x0, y0, z0, x1, y0, z0, x1, y0, z1, x0, y0, z1);
-            flatQuad(sprite, 0, 1, 0, x0, y1, z0, x1, y1, z0, x1, y1, z1, x0, y1, z1);
-        }
     }
 }

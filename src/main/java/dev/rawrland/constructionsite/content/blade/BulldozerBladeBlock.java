@@ -7,6 +7,7 @@ import dev.rawrland.constructionsite.registry.ModBlockEntities;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.util.RandomSource;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.context.BlockPlaceContext;
@@ -103,8 +104,21 @@ public class BulldozerBladeBlock extends Block implements IBE<BulldozerBladeBloc
         super.onPlace(state, level, pos, oldState, movedByPiston);
         // Skip when only a property of an existing blade block changed (regroup itself does that).
         if (!oldState.is(state.getBlock())) {
-            BladeGroup.regroup(level, pos);
+            if (movedByPiston) {
+                // Moved here by a contraption (Create Aeronautics puts its blocks down this way):
+                // the other blocks and this block's saved data are not in place yet. Join
+                // once everything has arrived, on the next tick.
+                level.scheduleTick(pos, this, 1);
+            } else {
+                BladeGroup.regroup(level, pos);
+            }
         }
+    }
+
+    /** Runs the join planned in {@link #onPlace} after a move. */
+    @Override
+    protected void tick(BlockState state, ServerLevel level, BlockPos pos, RandomSource random) {
+        BladeGroup.regroup(level, pos);
     }
 
     /**
@@ -114,13 +128,15 @@ public class BulldozerBladeBlock extends Block implements IBE<BulldozerBladeBloc
     @Override
     protected void onRemove(BlockState state, Level level, BlockPos pos, BlockState newState, boolean movedByPiston) {
         boolean removed = !state.is(newState.getBlock());
-        if (removed && level instanceof ServerLevel serverLevel
+        // A block that a contraption moves away is not broken: its load goes with it
+        // (Create Aeronautics removes the old block this way after copying it).
+        if (removed && !movedByPiston && level instanceof ServerLevel serverLevel
             && level.getBlockEntity(pos) instanceof BulldozerBladeBlockEntity blade) {
             blade.dropContentAsBroken(serverLevel);
         }
         // Create's way of removing the block entity.
         IBE.onRemove(state, level, pos, newState);
-        if (removed) {
+        if (removed && !movedByPiston) {
             for (Direction direction : Direction.values()) {
                 BladeGroup.regroup(level, pos.relative(direction));
             }

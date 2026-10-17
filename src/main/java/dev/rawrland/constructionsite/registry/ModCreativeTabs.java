@@ -22,6 +22,7 @@ public final class ModCreativeTabs {
             .displayItems((parameters, output) -> {
                 output.accept(ModItems.EXCAVATOR_BUCKET.get());
                 output.accept(ModItems.BULLDOZER_BLADE.get());
+                output.accept(ModItems.DUMP_BODY.get());
             })
             .build()
     );

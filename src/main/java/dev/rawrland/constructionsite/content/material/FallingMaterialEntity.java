@@ -57,6 +57,7 @@ public class FallingMaterialEntity extends Entity {
     private static final String TAG_BLOCK_STATE = "BlockState";
     private static final String TAG_BLOCK_DATA = "BlockData";
     private static final String TAG_SLIDES = "Slides";
+    private static final String TAG_AVOID = "Avoid";
 
     private static final Direction[] SIDES = {Direction.NORTH, Direction.EAST, Direction.SOUTH, Direction.WEST};
 
@@ -66,13 +67,30 @@ public class FallingMaterialEntity extends Entity {
 
     private int slides;
 
+    /**
+     * A level direction this block never slides toward, or null. A dump body sets
+     * the direction toward itself, so its load does not heap up under it.
+     */
+    @Nullable
+    private Direction avoid;
+
     public FallingMaterialEntity(EntityType<? extends FallingMaterialEntity> type, Level level) {
         super(type, level);
     }
 
     /** Lets a block fall from the given place in the world. */
     public static void spawn(ServerLevel level, BlockPos place, BlockState state, @Nullable CompoundTag blockData) {
+        spawn(level, place, state, blockData, null);
+    }
+
+    /**
+     * Lets a block fall from the given place in the world. When it lands it never
+     * slides toward {@code avoid} (a level direction, or null for any).
+     */
+    public static void spawn(ServerLevel level, BlockPos place, BlockState state, @Nullable CompoundTag blockData,
+                             @Nullable Direction avoid) {
         FallingMaterialEntity entity = new FallingMaterialEntity(ModEntities.FALLING_MATERIAL.get(), level);
+        entity.avoid = avoid != null && avoid.getAxis().isHorizontal() ? avoid : null;
         entity.setPos(place.getX() + 0.5, place.getY() + 0.01, place.getZ() + 0.5);
         entity.setCarriedState(state);
         entity.blockData = blockData == null ? null : blockData.copy();
@@ -152,6 +170,9 @@ public class FallingMaterialEntity extends Entity {
             List<Direction> sides = new ArrayList<>(List.of(SIDES));
             Collections.shuffle(sides, new java.util.Random(random.nextLong()));
             for (Direction side : sides) {
+                if (side == avoid) {
+                    continue;
+                }
                 BlockPos beside = place.relative(side);
                 if (isFree(level, beside) && isFree(level, beside.below())) {
                     slides++;
@@ -223,6 +244,9 @@ public class FallingMaterialEntity extends Entity {
             tag.put(TAG_BLOCK_DATA, blockData.copy());
         }
         tag.putInt(TAG_SLIDES, slides);
+        if (avoid != null) {
+            tag.putInt(TAG_AVOID, avoid.get3DDataValue());
+        }
     }
 
     @Override
@@ -234,5 +258,9 @@ public class FallingMaterialEntity extends Entity {
         }
         blockData = tag.contains(TAG_BLOCK_DATA, Tag.TAG_COMPOUND) ? tag.getCompound(TAG_BLOCK_DATA).copy() : null;
         slides = tag.getInt(TAG_SLIDES);
+        avoid = tag.contains(TAG_AVOID) ? Direction.from3DDataValue(tag.getInt(TAG_AVOID)) : null;
+        if (avoid != null && !avoid.getAxis().isHorizontal()) {
+            avoid = null;
+        }
     }
 }

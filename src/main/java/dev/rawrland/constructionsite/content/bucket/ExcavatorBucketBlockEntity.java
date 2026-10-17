@@ -6,13 +6,14 @@ import com.simibubi.create.foundation.blockEntity.behaviour.BlockEntityBehaviour
 import com.simibubi.create.foundation.utility.CreateLang;
 import dev.rawrland.constructionsite.content.material.DigCollapse;
 import dev.rawrland.constructionsite.content.material.FallingMaterialEntity;
+import dev.rawrland.constructionsite.content.tool.ContraptionTool;
 import dev.rawrland.constructionsite.content.tool.PushTracker;
+import dev.rawrland.constructionsite.content.tool.TipAngle;
+import dev.rawrland.constructionsite.content.tool.ToolHost;
+import dev.rawrland.constructionsite.content.tool.ToolSounds;
 import dev.rawrland.constructionsite.content.tool.WorldDig;
+import dev.rawrland.constructionsite.content.tool.ContraptionToolShadow;
 import dev.rawrland.constructionsite.registry.ModBlockEntities;
-import dev.ryanhcode.sable.Sable;
-import dev.ryanhcode.sable.sublevel.ServerSubLevel;
-import dev.simulated_team.simulated.content.blocks.rope.RopeStrandHolderBehavior;
-import dev.simulated_team.simulated.content.blocks.rope.RopeStrandHolderBlockEntity;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -51,20 +52,31 @@ import java.util.TreeMap;
  * Every bucket block holds at most one dug block. A joined bucket is simply
  * several of these working together: its capacity is the number of its blocks.
  *
- * Sable calls {@link #sable$tick} once per server tick, but only while this
- * block is part of a simulated contraption ("sub-level"). That is why a bucket
- * standing in the normal world never digs and never empties.
+ * The work is done in {@link #work}, once per server tick, but only while this
+ * block is on a contraption. That is why a bucket standing in the normal world
+ * never digs and never empties. Two kinds of contraption call it:
+ * <ul>
+ *     <li>Create Aeronautics' simulated contraptions: Sable calls the tick of
+ *     {@code AeroBucketBlockEntity}, which calls {@link #tickOnSimulatedContraption}.</li>
+ *     <li>Create's own contraptions (bearings, pistons, minecarts, trains): there the
+ *     block has no block entity of its own while it moves. A stand-in copy made
+ *     from its saved data does the work (see {@link ContraptionToolShadow}).</li>
+ * </ul>
+ * Where the work needs to know where the bucket is in the world, it asks its
+ * {@link ToolHost}, which is different for the two kinds.
  *
  * It builds on Create's SmartBlockEntity. That base class takes care of saving
  * and of sending changes to the players' games, and lets ready-made parts
  * ("behaviours") be plugged into the block entity.
  *
- * One such part is the rope end of Create Aeronautics (Simulated). Every bucket
- * block has one, but a bucket only ever uses one of them: see the rope section.
- * RopeStrandHolderBlockEntity is Simulated's interface for blocks with a rope
- * end; it includes Sable's interface for blocks that act on a contraption.
+ * This class works without Create Aeronautics. When Create Aeronautics is
+ * installed, the mod uses its subclass {@code compat.aeronautics.AeroBucketBlockEntity}
+ * instead, which adds the rope end and the tick on simulated contraptions.
+ * This class must never name a Create Aeronautics, Simulated or Sable class:
+ * it could then not even be loaded without them.
  */
-public class ExcavatorBucketBlockEntity extends SmartBlockEntity implements RopeStrandHolderBlockEntity, IHaveGoggleInformation {
+public class ExcavatorBucketBlockEntity extends SmartBlockEntity
+    implements IHaveGoggleInformation, ContraptionTool {
 
     /**
      * Distance from the block centre to the dig point, along the open side.
@@ -96,15 +108,13 @@ public class ExcavatorBucketBlockEntity extends SmartBlockEntity implements Rope
 
     // Emptying: a bucket whose open side points downward lets its content go.
 
-    /** A full bucket starts to spill when its open side points this many degrees below level. Set by the spec. */
-    private static final double TIP_ANGLE_FULL = 20.0;
-    /** The last block only leaves when the open side points this many degrees below level. Set by the spec. */
-    private static final double TIP_ANGLE_LAST = 45.0;
+    // The angles (20 degrees for a full bucket, 45 for the last block) are shared with the dump body: see TipAngle.
+
     /**
      * The bucket counts as tipped when the downward part of its open side's
      * direction is above this: the sine of the angle for a full bucket.
      */
-    private static final double TIP_LIMIT = Math.sin(Math.toRadians(TIP_ANGLE_FULL));
+    private static final double TIP_LIMIT = TipAngle.FULL_LIMIT;
     /** A tipped bucket releases blocks once every this many ticks (a quarter of a second). Set by the spec. */
     private static final int RELEASE_INTERVAL_TICKS = 5;
     /** Released blocks appear this far in front of the block centre: in the middle of the next block. */
@@ -172,13 +182,6 @@ public class ExcavatorBucketBlockEntity extends SmartBlockEntity implements Rope
      */
     private boolean holdUntilLevel;
 
-    /**
-     * The rope end of this block, from Create Aeronautics. It holds, saves and
-     * simulates the rope by itself. Set in addBehaviours, which runs before the
-     * other fields get their starting values, so it must not have one here.
-     */
-    private RopeStrandHolderBehavior ropeHolder;
-
     // ------------------------------------------------------- not saved, per tick
 
     /** Follows this block's dig point in the world and tells how it moved over the last ticks. */
@@ -190,15 +193,42 @@ public class ExcavatorBucketBlockEntity extends SmartBlockEntity implements Rope
     /** Ticks left until a tipped bucket releases its next blocks. Only used by the anchor block. */
     private int releaseCooldown;
 
+    /**
+     * The contraption this block is working on, while it works. Set for the
+     * length of one tick on a simulated contraption, and for good on a stand-in
+     * copy on one of Create's own contraptions. Null otherwise: then the other
+     * blocks of the bucket are looked up in this block's level.
+     */
+    @Nullable
+    private ToolHost host;
+
+    /**
+     * Set when this block was put down by one of Create's contraptions. Joining
+     * is then checked again once all blocks are in place, because the contraption
+     * may have turned the bucket.
+     */
+    private boolean regroupAfterMove;
+
     public ExcavatorBucketBlockEntity(BlockPos pos, BlockState state) {
         super(ModBlockEntities.EXCAVATOR_BUCKET.get(), pos, state);
     }
 
-    /** The plug-in parts of this block entity: the rope end. Called while the block entity is being created. */
+    /** The plug-in parts of this block entity. None here; with Create Aeronautics the subclass adds the rope end. */
     @Override
     public void addBehaviours(List<BlockEntityBehaviour> behaviours) {
-        ropeHolder = new RopeStrandHolderBehavior(this);
-        behaviours.add(ropeHolder);
+    }
+
+    /**
+     * Runs every tick in the normal world. Its only job here: after one of Create's
+     * contraptions has put the bucket down, check once which blocks belong together.
+     */
+    @Override
+    public void tick() {
+        super.tick();
+        if (regroupAfterMove && level instanceof ServerLevel serverLevel) {
+            regroupAfterMove = false;
+            BucketGroup.regroup(serverLevel, getBlockPos());
+        }
     }
 
     // ------------------------------------------------------------ this block
@@ -286,12 +316,32 @@ public class ExcavatorBucketBlockEntity extends SmartBlockEntity implements Rope
     /** The anchor block's block entity: the one block that acts for the whole bucket. This one for a single bucket. */
     @Nullable
     private ExcavatorBucketBlockEntity getAnchor() {
-        if (isAnchor() || level == null) {
+        if (isAnchor() || !canLookUpOthers()) {
             return this;
         }
-        BlockPos anchorPos = getBlockPos().offset(anchorOffset);
-        if (level.isLoaded(anchorPos) && level.getBlockEntity(anchorPos) instanceof ExcavatorBucketBlockEntity anchor) {
-            return anchor;
+        return bucketAt(getBlockPos().offset(anchorOffset));
+    }
+
+    /** True if the other blocks of this bucket can be looked up: on a contraption, or in a level. */
+    private boolean canLookUpOthers() {
+        return host != null || level != null;
+    }
+
+    /**
+     * The bucket block entity at a position, in this block's own coordinates:
+     * through the contraption while working on one, otherwise in this block's level.
+     * Null if there is none there.
+     */
+    @Nullable
+    private ExcavatorBucketBlockEntity bucketAt(BlockPos pos) {
+        if (pos.equals(getBlockPos())) {
+            return this;
+        }
+        if (host != null) {
+            return host.blockEntityAt(pos) instanceof ExcavatorBucketBlockEntity other ? other : null;
+        }
+        if (level != null && level.isLoaded(pos) && level.getBlockEntity(pos) instanceof ExcavatorBucketBlockEntity other) {
+            return other;
         }
         return null;
     }
@@ -305,15 +355,14 @@ public class ExcavatorBucketBlockEntity extends SmartBlockEntity implements Rope
     /** The block entities of all blocks of this bucket, this one included. Works on server and client. */
     public List<ExcavatorBucketBlockEntity> getGroupMembers() {
         List<ExcavatorBucketBlockEntity> members = new ArrayList<>();
-        if (level == null) {
+        if (!canLookUpOthers()) {
             members.add(this);
             return members;
         }
         for (BlockPos pos : BucketGroup.members(getBlockPos(), getBlockState(), anchorOffset, groupHeight, groupWidth)) {
-            if (pos.equals(getBlockPos())) {
-                members.add(this);
-            } else if (level.isLoaded(pos) && level.getBlockEntity(pos) instanceof ExcavatorBucketBlockEntity other) {
-                members.add(other);
+            ExcavatorBucketBlockEntity member = bucketAt(pos);
+            if (member != null) {
+                members.add(member);
             }
         }
         return members;
@@ -361,33 +410,23 @@ public class ExcavatorBucketBlockEntity extends SmartBlockEntity implements Rope
     // A bucket takes one rope per block of its width. Each is tied to a ring on the
     // middle tooth of its column, at the column's "hook block": the block in the
     // front layer and bottom row, which carries that column's teeth.
-    // Create Aeronautics' own rope item, physics and drawing are used.
+    // Create Aeronautics' own rope item, physics and drawing are used. Ropes only
+    // exist with Create Aeronautics installed; the rope end itself lives in the
+    // subclass AeroBucketBlockEntity. The column logic stays here.
 
-    @Override
-    public RopeStrandHolderBehavior getBehavior() {
-        return ropeHolder;
-    }
-
-    /** True if a rope is tied to this very block. */
+    /** True if a rope is tied to this very block. Never without Create Aeronautics. */
     public boolean hasRope() {
-        return ropeHolder != null && ropeHolder.isAttached();
+        return false;
     }
 
     /** The hook block of one column of this bucket (0 = leftmost), or null if it cannot be found. */
     @Nullable
     public ExcavatorBucketBlockEntity getHookBlock(int column) {
-        if (level == null) {
+        if (!canLookUpOthers()) {
             return null;
         }
         Direction right = BucketGroup.axes(getBlockState()).right();
-        BlockPos pos = getBlockPos().offset(getAnchorOffset()).relative(right, column);
-        if (pos.equals(getBlockPos())) {
-            return this;
-        }
-        if (level.isLoaded(pos) && level.getBlockEntity(pos) instanceof ExcavatorBucketBlockEntity hook) {
-            return hook;
-        }
-        return null;
+        return bucketAt(getBlockPos().offset(getAnchorOffset()).relative(right, column));
     }
 
     /**
@@ -431,9 +470,9 @@ public class ExcavatorBucketBlockEntity extends SmartBlockEntity implements Rope
     /**
      * Where a rope tied to this block ends: at the ring on this block's middle
      * tooth. In the block's own position, not yet
-     * converted to the world; Create Aeronautics does that.
+     * converted to the world; Create Aeronautics does that. Used by the rope end
+     * of AeroBucketBlockEntity.
      */
-    @Override
     public Vec3 getAttachmentPoint(BlockPos pos, BlockState state) {
         int height = getGroupHeight();
         BucketGroup.Axes axes = BucketGroup.axes(state);
@@ -489,12 +528,11 @@ public class ExcavatorBucketBlockEntity extends SmartBlockEntity implements Rope
 
     // ---------------------------------------------------------------- digging
 
-    @Override
-    public void sable$tick(ServerSubLevel subLevel) {
-        if (!(level instanceof ServerLevel serverLevel) || Sable.HELPER.getContaining(this) != subLevel) {
-            return;
-        }
-
+    /**
+     * One tick on a Create Aeronautics simulated contraption, called by
+     * AeroBucketBlockEntity with the host that knows where the contraption is.
+     */
+    protected void tickOnSimulatedContraption(ServerLevel serverLevel, ToolHost simulatedHost) {
         // It is not known whether assembling a contraption runs the normal
         // "block placed" logic. So joining is checked once more here.
         // One block per bucket is enough to do this: the anchor, or a block that is on its own.
@@ -505,13 +543,38 @@ public class ExcavatorBucketBlockEntity extends SmartBlockEntity implements Rope
             }
         }
 
+        // The physics of a simulated contraption already stops the bucket at a
+        // block it cannot dig, so what blocks it is not needed here.
+        host = simulatedHost;
+        try {
+            work(serverLevel);
+        } finally {
+            host = null;
+        }
+    }
+
+    @Override
+    public void setHost(@Nullable ToolHost host) {
+        this.host = host;
+    }
+
+    /**
+     * One tick of the bucket's work: emptying, catching and digging. The same on
+     * both kinds of contraption; only the {@link #host} differs.
+     *
+     * @return a world position in the bucket's way that it may not dig or has no
+     *         room for, while it is moving into material; null if nothing blocks it
+     */
+    @Nullable
+    @Override
+    public BlockPos work(ServerLevel serverLevel) {
         // Only blocks with an open side dig. The back layer of a 2-deep bucket just stores.
         if (!BucketGroup.isFrontLayer(getBlockState(), anchorOffset)) {
-            return;
+            return null;
         }
 
-        // Positions of blocks on a contraption are stored far away from where
-        // the player sees them. Sable converts ("projects") them to the world.
+        // Positions of blocks on a contraption are not where the player sees
+        // them. The host converts them to the world.
         Direction facing = getBlockState().getValue(ExcavatorBucketBlock.FACING);
         Vec3 localCentre = getBlockPos().getCenter();
         Vec3 localDigPoint = localCentre.add(Vec3.atLowerCornerOf(facing.getNormal()).scale(PROBE_DISTANCE));
@@ -520,9 +583,9 @@ public class ExcavatorBucketBlockEntity extends SmartBlockEntity implements Rope
         Direction towardTeeth = BucketGroup.axes(getBlockState()).up().getOpposite();
         Vec3 localTeethPoint = localCentre.add(Vec3.atLowerCornerOf(towardTeeth.getNormal()));
 
-        Vec3 worldCentre = Sable.HELPER.projectOutOfSubLevel(serverLevel, localCentre);
-        Vec3 worldDigPoint = Sable.HELPER.projectOutOfSubLevel(serverLevel, localDigPoint);
-        Vec3 worldTeethPoint = Sable.HELPER.projectOutOfSubLevel(serverLevel, localTeethPoint);
+        Vec3 worldCentre = toWorld(localCentre);
+        Vec3 worldDigPoint = toWorld(localDigPoint);
+        Vec3 worldTeethPoint = toWorld(localTeethPoint);
 
         // Which way the open side points in the world. Pointing clearly downward means the bucket is tipped.
         Vec3 openSideDirection = worldDigPoint.subtract(worldCentre).normalize();
@@ -539,19 +602,39 @@ public class ExcavatorBucketBlockEntity extends SmartBlockEntity implements Rope
         // So it only catches while level, or while holding its load after digging tipped.
         if (!tipped || isHoldingLoad()) {
             Vec3 localFaceCentre = localCentre.add(Vec3.atLowerCornerOf(facing.getNormal()).scale(0.5));
-            catchFallingMaterial(serverLevel, Sable.HELPER.projectOutOfSubLevel(serverLevel, localFaceCentre));
+            catchFallingMaterial(serverLevel, toWorld(localFaceCentre));
         }
 
         boolean pushed = updatePush(worldDigPoint, openSideDirection,
             worldTeethPoint.subtract(worldCentre).normalize());
         if (!pushed) {
-            return;
+            return null;
         }
 
         // Dig every diggable block the dig area reaches, as long as the bucket has room.
-        for (BlockPos target : digAreaTargets(serverLevel, localCentre, facing)) {
-            tryDig(serverLevel, target, tipped);
+        BlockPos blocked = null;
+        for (BlockPos target : digAreaTargets(localCentre, facing)) {
+            if (tryDig(serverLevel, target, tipped) && blocked == null) {
+                blocked = target;
+            }
         }
+        return blocked;
+    }
+
+    @Override
+    public boolean isBlockedBy(ServerLevel serverLevel, BlockPos pos) {
+        if (!WorldDig.isObstacle(serverLevel, pos)) {
+            return false;
+        }
+        return !WorldDig.canTake(serverLevel, pos) || findFreeMember() == null;
+    }
+
+    /** Where a point of this block, in its own coordinates, is in the world. Only while working. */
+    private Vec3 toWorld(Vec3 localPoint) {
+        if (host == null) {
+            throw new IllegalStateException("The bucket only knows where it is while it works on a contraption");
+        }
+        return host.toWorld(localPoint);
     }
 
     // --------------------------------------------------------------- emptying
@@ -604,7 +687,7 @@ public class ExcavatorBucketBlockEntity extends SmartBlockEntity implements Rope
                 continue;
             }
             int column = BucketGroup.along(member.getBlockPos().subtract(getBlockPos()), right);
-            Vec3 worldPoint = Sable.HELPER.projectOutOfSubLevel(serverLevel, member.getBlockPos().getCenter().add(forward));
+            Vec3 worldPoint = toWorld(member.getBlockPos().getCenter().add(forward));
             columns.computeIfAbsent(column, key -> new ArrayList<>()).add(worldPoint);
         }
 
@@ -633,9 +716,7 @@ public class ExcavatorBucketBlockEntity extends SmartBlockEntity implements Rope
      * A full bucket needs the smallest angle; the needed angle grows evenly as it empties.
      */
     private static boolean isSteepEnough(double downward, int held, int capacity) {
-        double emptyShare = 1.0 - (double) held / capacity;
-        double neededAngle = TIP_ANGLE_FULL + (TIP_ANGLE_LAST - TIP_ANGLE_FULL) * emptyShare;
-        return downward >= Math.sin(Math.toRadians(neededAngle));
+        return TipAngle.isSteepEnough(downward, held, capacity);
     }
 
     /** True if a released block may appear here: the place is loaded and holds air or something replaceable. */
@@ -700,7 +781,7 @@ public class ExcavatorBucketBlockEntity extends SmartBlockEntity implements Rope
     }
 
     /** The world blocks that this block's part of the dig area currently reaches. */
-    private Set<BlockPos> digAreaTargets(ServerLevel serverLevel, Vec3 localCentre, Direction facing) {
+    private Set<BlockPos> digAreaTargets(Vec3 localCentre, Direction facing) {
         BucketGroup.Axes axes = BucketGroup.axes(getBlockState());
         Vec3 right = Vec3.atLowerCornerOf(axes.right().getNormal());
         Vec3 up = Vec3.atLowerCornerOf(axes.up().getNormal());
@@ -714,7 +795,7 @@ public class ExcavatorBucketBlockEntity extends SmartBlockEntity implements Rope
         for (double r : FACE_SAMPLES) {
             for (double u : FACE_SAMPLES) {
                 Vec3 local = localCentre.add(right.scale(r)).add(up.scale(u)).add(forward.scale(faceDistance));
-                targets.add(BlockPos.containing(Sable.HELPER.projectOutOfSubLevel(serverLevel, local)));
+                targets.add(BlockPos.containing(toWorld(local)));
             }
         }
 
@@ -724,7 +805,7 @@ public class ExcavatorBucketBlockEntity extends SmartBlockEntity implements Rope
             for (double r : FACE_SAMPLES) {
                 Vec3 local = localCentre.add(right.scale(r)).add(up.scale(TEETH_HEIGHT))
                     .add(forward.scale(teethDistance));
-                targets.add(BlockPos.containing(Sable.HELPER.projectOutOfSubLevel(serverLevel, local)));
+                targets.add(BlockPos.containing(toWorld(local)));
             }
         }
         return targets;
@@ -754,23 +835,30 @@ public class ExcavatorBucketBlockEntity extends SmartBlockEntity implements Rope
         return pushing || scooping;
     }
 
-    private void tryDig(ServerLevel serverLevel, BlockPos target, boolean tipped) {
+    /**
+     * Digs the block at this world position into the bucket, if it may be dug and the bucket has room.
+     *
+     * @return true if the block stays and is in the bucket's way: something solid
+     *         that may not be dug, or that the full bucket has no room for
+     */
+    private boolean tryDig(ServerLevel serverLevel, BlockPos target, boolean tipped) {
         // Diggable, in the normal world, not unbreakable: the rules shared by all tools.
         if (!WorldDig.canTake(serverLevel, target)) {
-            return;
+            return WorldDig.isObstacle(serverLevel, target);
         }
 
         // Find room before touching the world: this block, or another block of the same bucket.
         ExcavatorBucketBlockEntity receiver = findFreeMember();
         if (receiver == null) {
-            return;
+            return WorldDig.isObstacle(serverLevel, target);
         }
 
         // Take the block with its extra data. No item drops; break particles and sound still play.
         WorldDig.DugBlock dug = WorldDig.take(serverLevel, target, true);
         if (dug == null) {
-            return;
+            return false;
         }
+        ToolSounds.playMetalInMaterial(serverLevel, target);
 
         receiver.setContent(dug.state(), dug.blockEntityData(), serverLevel.getGameTime());
 
@@ -786,6 +874,7 @@ public class ExcavatorBucketBlockEntity extends SmartBlockEntity implements Rope
                 anchor.setChanged();
             }
         }
+        return false;
     }
 
     // --------------------------------------------------------------- breaking
@@ -883,5 +972,9 @@ public class ExcavatorBucketBlockEntity extends SmartBlockEntity implements Rope
         groupWidth = Math.max(1, tag.getInt(TAG_GROUP_WIDTH));
         mount = BucketMount.byIndex(tag.getInt(TAG_MOUNT));
         holdUntilLevel = tag.getBoolean(TAG_HOLD_UNTIL_LEVEL);
+        // Not saved: only ever in the data a Create contraption puts the block down with.
+        if (tag.getBoolean(ContraptionTool.TAG_REGROUP_AFTER_MOVE)) {
+            regroupAfterMove = true;
+        }
     }
 }

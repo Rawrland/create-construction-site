@@ -7,12 +7,13 @@ import com.simibubi.create.foundation.utility.CreateLang;
 import dev.rawrland.constructionsite.Config;
 import dev.rawrland.constructionsite.content.bucket.BucketGroup;
 import dev.rawrland.constructionsite.content.material.FallingMaterialEntity;
+import dev.rawrland.constructionsite.content.tool.ContraptionTool;
+import dev.rawrland.constructionsite.content.tool.ContraptionToolShadow;
 import dev.rawrland.constructionsite.content.tool.PushTracker;
+import dev.rawrland.constructionsite.content.tool.ToolHost;
+import dev.rawrland.constructionsite.content.tool.ToolSounds;
 import dev.rawrland.constructionsite.content.tool.WorldDig;
 import dev.rawrland.constructionsite.registry.ModBlockEntities;
-import dev.ryanhcode.sable.Sable;
-import dev.ryanhcode.sable.api.block.BlockEntitySubLevelActor;
-import dev.ryanhcode.sable.sublevel.ServerSubLevel;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -62,11 +63,26 @@ import java.util.Set;
  * The blade never lets blocks fall as entities: loose falling blocks around a
  * moving machine end up under it and jam it.
  *
- * Sable calls {@link #sable$tick} once per server tick, but only while this
- * block is part of a simulated contraption. That is why a blade standing in
- * the normal world never does anything.
+ * The work is done in {@link #work}, once per server tick, but only while this
+ * block is on a contraption. That is why a blade standing in the normal world
+ * never does anything. Two kinds of contraption call it:
+ * <ul>
+ *     <li>Create Aeronautics' simulated contraptions: Sable calls the tick of
+ *     {@code AeroBladeBlockEntity}, which calls {@link #tickOnSimulatedContraption}.</li>
+ *     <li>Create's own contraptions (bearings, pistons, minecarts, trains): there the
+ *     block has no block entity of its own while it moves. A stand-in copy made
+ *     from its saved data does the work (see {@link ContraptionToolShadow}).</li>
+ * </ul>
+ * Where the work needs to know where the blade is in the world, it asks its
+ * {@link ToolHost}, which is different for the two kinds.
+ *
+ * This class works without Create Aeronautics. When Create Aeronautics is
+ * installed, the mod uses its subclass {@code compat.aeronautics.AeroBladeBlockEntity}
+ * instead, which adds the tick on simulated contraptions. This class must never
+ * name a Create Aeronautics, Simulated or Sable class.
  */
-public class BulldozerBladeBlockEntity extends SmartBlockEntity implements BlockEntitySubLevelActor, IHaveGoggleInformation {
+public class BulldozerBladeBlockEntity extends SmartBlockEntity
+    implements IHaveGoggleInformation, ContraptionTool {
 
     /**
      * Distance from the block centre to the probe points, along the working face's direction.
@@ -193,6 +209,22 @@ public class BulldozerBladeBlockEntity extends SmartBlockEntity implements Block
     /** Set after the first tick on a contraption, where joining is checked once more. */
     private boolean regroupedOnContraption;
 
+    /**
+     * The contraption this block is working on, while it works. Set for the
+     * length of one tick on a simulated contraption, and for good on a stand-in
+     * copy on one of Create's own contraptions. Null otherwise: then the other
+     * blocks of the blade are looked up in this block's level.
+     */
+    @Nullable
+    private ToolHost host;
+
+    /**
+     * Set when this block was put down by one of Create's contraptions. Joining
+     * is then checked again once all blocks are in place, because the contraption
+     * may have turned the blade.
+     */
+    private boolean regroupAfterMove;
+
     public BulldozerBladeBlockEntity(BlockPos pos, BlockState state) {
         super(ModBlockEntities.BULLDOZER_BLADE.get(), pos, state);
     }
@@ -200,6 +232,19 @@ public class BulldozerBladeBlockEntity extends SmartBlockEntity implements Block
     /** The blade uses none of Create's plug-in parts. */
     @Override
     public void addBehaviours(List<BlockEntityBehaviour> behaviours) {
+    }
+
+    /**
+     * Runs every tick in the normal world. Its only job here: after one of Create's
+     * contraptions has put the blade down, check once which blocks belong together.
+     */
+    @Override
+    public void tick() {
+        super.tick();
+        if (regroupAfterMove && level instanceof ServerLevel serverLevel) {
+            regroupAfterMove = false;
+            BladeGroup.regroup(serverLevel, getBlockPos());
+        }
     }
 
     // ------------------------------------------------------------ this block
@@ -280,18 +325,36 @@ public class BulldozerBladeBlockEntity extends SmartBlockEntity implements Block
     /** The block entities of all blocks of this blade, column by column, bottom first. Works on server and client. */
     public List<BulldozerBladeBlockEntity> getGroupMembers() {
         List<BulldozerBladeBlockEntity> members = new ArrayList<>();
-        if (level == null) {
+        if (host == null && level == null) {
             members.add(this);
             return members;
         }
         for (BlockPos pos : BladeGroup.members(getBlockPos(), getBlockState(), anchorOffset, groupHeight, groupWidth)) {
-            if (pos.equals(getBlockPos())) {
-                members.add(this);
-            } else if (level.isLoaded(pos) && level.getBlockEntity(pos) instanceof BulldozerBladeBlockEntity other) {
-                members.add(other);
+            BulldozerBladeBlockEntity member = bladeAt(pos);
+            if (member != null) {
+                members.add(member);
             }
         }
         return members;
+    }
+
+    /**
+     * The blade block entity at a position, in this block's own coordinates:
+     * through the contraption while working on one, otherwise in this block's level.
+     * Null if there is none there.
+     */
+    @Nullable
+    private BulldozerBladeBlockEntity bladeAt(BlockPos pos) {
+        if (pos.equals(getBlockPos())) {
+            return this;
+        }
+        if (host != null) {
+            return host.blockEntityAt(pos) instanceof BulldozerBladeBlockEntity other ? other : null;
+        }
+        if (level != null && level.isLoaded(pos) && level.getBlockEntity(pos) instanceof BulldozerBladeBlockEntity other) {
+            return other;
+        }
+        return null;
     }
 
     /**
@@ -421,12 +484,11 @@ public class BulldozerBladeBlockEntity extends SmartBlockEntity implements Block
 
     // ---------------------------------------------------------------- working
 
-    @Override
-    public void sable$tick(ServerSubLevel subLevel) {
-        if (!(level instanceof ServerLevel serverLevel) || Sable.HELPER.getContaining(this) != subLevel) {
-            return;
-        }
-
+    /**
+     * One tick on a Create Aeronautics simulated contraption, called by
+     * AeroBladeBlockEntity with the host that knows where the contraption is.
+     */
+    protected void tickOnSimulatedContraption(ServerLevel serverLevel, ToolHost simulatedHost) {
         // It is not known whether assembling a contraption runs the normal
         // "block placed" logic. So joining is checked once more here, by one block per blade.
         if (!regroupedOnContraption) {
@@ -436,13 +498,38 @@ public class BulldozerBladeBlockEntity extends SmartBlockEntity implements Block
             }
         }
 
-        // Positions of blocks on a contraption are stored far away from where
-        // the player sees them. Sable converts ("projects") them to the world.
+        // The physics of a simulated contraption already stops the blade at a
+        // block it cannot take, so what blocks it is not needed here.
+        host = simulatedHost;
+        try {
+            work(serverLevel);
+        } finally {
+            host = null;
+        }
+    }
+
+    @Override
+    public void setHost(@Nullable ToolHost host) {
+        this.host = host;
+    }
+
+    /**
+     * One tick of the blade's work: catching, letting go, and taking blocks. The
+     * same on both kinds of contraption; only the {@link #host} differs.
+     *
+     * @return a world position in the blade's way that it may not take or has no
+     *         room for, while it is pushed into material; null if nothing blocks it
+     */
+    @Nullable
+    @Override
+    public BlockPos work(ServerLevel serverLevel) {
+        // Positions of blocks on a contraption are not where the player sees
+        // them. The host converts them to the world.
         Direction facing = getBlockState().getValue(BulldozerBladeBlock.FACING);
         Vec3 forward = Vec3.atLowerCornerOf(facing.getNormal());
         Vec3 localCentre = getBlockPos().getCenter();
-        Vec3 worldCentre = Sable.HELPER.projectOutOfSubLevel(serverLevel, localCentre);
-        Vec3 worldProbe = Sable.HELPER.projectOutOfSubLevel(serverLevel, localCentre.add(forward.scale(PROBE_DISTANCE)));
+        Vec3 worldCentre = toWorld(localCentre);
+        Vec3 worldProbe = toWorld(localCentre.add(forward.scale(PROBE_DISTANCE)));
 
         // Which way the working face points in the world, and whether that is close enough to level.
         Vec3 faceDirection = worldProbe.subtract(worldCentre).normalize();
@@ -477,17 +564,40 @@ public class BulldozerBladeBlockEntity extends SmartBlockEntity implements Block
             pushingTicksLeft--;
         }
         if (!nearLevel || pushingTicksLeft <= 0) {
-            return;
+            return null;
         }
 
         // Pushed face first: take every diggable block the working face touches.
-        for (BlockPos target : probeTargets(serverLevel, localCentre, forward)) {
-            tryTake(serverLevel, target);
+        BlockPos blocked = null;
+        for (BlockPos target : probeTargets(localCentre, forward)) {
+            if (tryTake(serverLevel, target) && blocked == null) {
+                blocked = target;
+            }
         }
+        return blocked;
+    }
+
+    @Override
+    public boolean isBlockedBy(ServerLevel serverLevel, BlockPos pos) {
+        if (!WorldDig.isObstacle(serverLevel, pos)) {
+            return false;
+        }
+        if (!WorldDig.canTake(serverLevel, pos)) {
+            return true;
+        }
+        return findReceiver() == null && findOverflowPlace(serverLevel) == null;
+    }
+
+    /** Where a point of this block, in its own coordinates, is in the world. Only while working. */
+    private Vec3 toWorld(Vec3 localPoint) {
+        if (host == null) {
+            throw new IllegalStateException("The blade only knows where it is while it works on a contraption");
+        }
+        return host.toWorld(localPoint);
     }
 
     /** The world blocks that this block's working face currently touches. */
-    private Set<BlockPos> probeTargets(ServerLevel serverLevel, Vec3 localCentre, Vec3 forward) {
+    private Set<BlockPos> probeTargets(Vec3 localCentre, Vec3 forward) {
         BucketGroup.Axes axes = BladeGroup.axes(getBlockState());
         Vec3 right = Vec3.atLowerCornerOf(axes.right().getNormal());
         Vec3 up = Vec3.atLowerCornerOf(axes.up().getNormal());
@@ -496,7 +606,7 @@ public class BulldozerBladeBlockEntity extends SmartBlockEntity implements Block
         for (double r : PROBE_ACROSS) {
             for (double u : PROBE_UP) {
                 Vec3 local = localCentre.add(right.scale(r)).add(up.scale(u)).add(forward.scale(PROBE_DISTANCE));
-                targets.add(BlockPos.containing(Sable.HELPER.projectOutOfSubLevel(serverLevel, local)));
+                targets.add(BlockPos.containing(toWorld(local)));
             }
         }
         return targets;
@@ -507,11 +617,14 @@ public class BulldozerBladeBlockEntity extends SmartBlockEntity implements Block
      * be taken. What stands on that block follows it into the pile as far as
      * there is room. With a full pile the block is moved to the side instead;
      * if there is no room there either, it stays where it is and stops the blade.
+     *
+     * @return true if the block stays and is in the blade's way: something solid
+     *         that may not be taken, or that the full blade has no place for
      */
-    private void tryTake(ServerLevel serverLevel, BlockPos target) {
+    private boolean tryTake(ServerLevel serverLevel, BlockPos target) {
         // Diggable, in the normal world, not unbreakable: the rules shared by all tools.
         if (!WorldDig.canTake(serverLevel, target)) {
-            return;
+            return WorldDig.isObstacle(serverLevel, target);
         }
         // Find room before touching the world: in the pile, or else beside the blade.
         BulldozerBladeBlockEntity receiver = findReceiver();
@@ -519,7 +632,7 @@ public class BulldozerBladeBlockEntity extends SmartBlockEntity implements Block
         if (receiver == null) {
             overflowPlace = findOverflowPlace(serverLevel);
             if (overflowPlace == null) {
-                return;
+                return WorldDig.isObstacle(serverLevel, target);
             }
         }
 
@@ -527,14 +640,15 @@ public class BulldozerBladeBlockEntity extends SmartBlockEntity implements Block
         // No item drops either. A quiet sound of the material being moved.
         WorldDig.DugBlock dug = WorldDig.take(serverLevel, target, false);
         if (dug == null) {
-            return;
+            return false;
         }
         serverLevel.playSound(null, target, dug.state().getSoundType(serverLevel, target, null).getPlaceSound(),
             SoundSource.BLOCKS, 0.6F, 0.8F);
+        ToolSounds.playMetalInMaterial(serverLevel, target);
         if (receiver == null) {
             // Full: the block goes off the end of the blade. Nothing more is brought down.
             putDown(serverLevel, overflowPlace, dug.state(), dug.blockEntityData());
-            return;
+            return false;
         }
         addToPile(serverLevel, receiver, dug.state(), dug.blockEntityData(), target.getCenter());
 
@@ -542,24 +656,25 @@ public class BulldozerBladeBlockEntity extends SmartBlockEntity implements Block
         // as the pile can hold. The rest stays where it is until the next pass.
         // Nothing falls: falling blocks around a moving machine end up under it.
         if (!Config.COLLAPSE_ENABLED.get()) {
-            return;
+            return false;
         }
         int maxHeight = Config.COLLAPSE_MAX_HEIGHT.get();
         for (int step = 1; step <= maxHeight; step++) {
             BlockPos above = target.above(step);
             if (!WorldDig.canTake(serverLevel, above)) {
-                return;
+                return false;
             }
             receiver = findReceiver();
             if (receiver == null) {
-                return;
+                return false;
             }
             WorldDig.DugBlock fallen = WorldDig.take(serverLevel, above, false);
             if (fallen == null) {
-                return;
+                return false;
             }
             addToPile(serverLevel, receiver, fallen.state(), fallen.blockEntityData(), above.getCenter());
         }
+        return false;
     }
 
     /**
@@ -577,16 +692,14 @@ public class BulldozerBladeBlockEntity extends SmartBlockEntity implements Block
         // The blade's own directions as they point in the world right now.
         BucketGroup.Axes axes = BladeGroup.axes(getBlockState());
         Vec3 localOrigin = getBlockPos().getCenter();
-        Vec3 worldOrigin = Sable.HELPER.projectOutOfSubLevel(serverLevel, localOrigin);
-        Vec3 worldRight = Sable.HELPER.projectOutOfSubLevel(serverLevel,
-            localOrigin.add(Vec3.atLowerCornerOf(axes.right().getNormal()))).subtract(worldOrigin);
-        Vec3 worldUp = Sable.HELPER.projectOutOfSubLevel(serverLevel,
-            localOrigin.add(Vec3.atLowerCornerOf(axes.up().getNormal()))).subtract(worldOrigin);
-        Vec3 worldForward = Sable.HELPER.projectOutOfSubLevel(serverLevel,
-            localOrigin.add(Vec3.atLowerCornerOf(axes.back().getOpposite().getNormal()))).subtract(worldOrigin);
+        Vec3 worldOrigin = toWorld(localOrigin);
+        Vec3 worldRight = toWorld(localOrigin.add(Vec3.atLowerCornerOf(axes.right().getNormal()))).subtract(worldOrigin);
+        Vec3 worldUp = toWorld(localOrigin.add(Vec3.atLowerCornerOf(axes.up().getNormal()))).subtract(worldOrigin);
+        Vec3 worldForward = toWorld(localOrigin.add(Vec3.atLowerCornerOf(axes.back().getOpposite().getNormal())))
+            .subtract(worldOrigin);
 
         // From the block's new place in the pile to where it came from, in those directions.
-        Vec3 worldSlot = Sable.HELPER.projectOutOfSubLevel(serverLevel, localPilePlace(column, slot[0], slot[1]));
+        Vec3 worldSlot = toWorld(localPilePlace(column, slot[0], slot[1]));
         Vec3 offset = cameFrom.subtract(worldSlot);
         if (offset.length() > MAX_SLIDE_DISTANCE) {
             offset = offset.normalize().scale(MAX_SLIDE_DISTANCE);
@@ -603,7 +716,7 @@ public class BulldozerBladeBlockEntity extends SmartBlockEntity implements Block
      * there is room. With a full pile it is left alone and lands as usual.
      */
     private void catchFallingMaterial(ServerLevel serverLevel, Vec3 localCentre, Vec3 forward) {
-        Vec3 worldMiddle = Sable.HELPER.projectOutOfSubLevel(serverLevel, localCentre.add(forward.scale(CATCH_ZONE_DISTANCE)));
+        Vec3 worldMiddle = toWorld(localCentre.add(forward.scale(CATCH_ZONE_DISTANCE)));
         AABB catchZone = AABB.ofSize(worldMiddle, CATCH_ZONE_SIZE, CATCH_ZONE_SIZE, CATCH_ZONE_SIZE);
         List<FallingMaterialEntity> found = serverLevel.getEntitiesOfClass(
             FallingMaterialEntity.class,
@@ -645,8 +758,8 @@ public class BulldozerBladeBlockEntity extends SmartBlockEntity implements Block
     }
 
     /** The world block that a place in a column's pile lies in. */
-    private BlockPos pilePlace(ServerLevel serverLevel, int column, int depth, int level) {
-        return BlockPos.containing(Sable.HELPER.projectOutOfSubLevel(serverLevel, localPilePlace(column, depth, level)));
+    private BlockPos pilePlace(int column, int depth, int level) {
+        return BlockPos.containing(toWorld(localPilePlace(column, depth, level)));
     }
 
     /**
@@ -663,8 +776,8 @@ public class BulldozerBladeBlockEntity extends SmartBlockEntity implements Block
         int offCentre = 2 * column - (width - 1);
         boolean leftFirst = offCentre < 0 || (offCentre == 0 && serverLevel.random.nextBoolean());
 
-        BlockPos left = pilePlace(serverLevel, -1, 0, 0);
-        BlockPos right = pilePlace(serverLevel, width, 0, 0);
+        BlockPos left = pilePlace(-1, 0, 0);
+        BlockPos right = pilePlace(width, 0, 0);
         BlockPos first = leftFirst ? left : right;
         BlockPos second = leftFirst ? right : left;
         if (isFree(serverLevel, first)) {
@@ -685,12 +798,12 @@ public class BulldozerBladeBlockEntity extends SmartBlockEntity implements Block
      * blade on a vehicle rarely sits exactly on the grid: it may ride a little
      * high or low, and that must not count as a gap.
      */
-    private BlockPos placeUnderPile(ServerLevel serverLevel, int column, int depth) {
+    private BlockPos placeUnderPile(int column, int depth) {
         BucketGroup.Axes axes = BladeGroup.axes(getBlockState());
         // A point on the level of the cutting edge, in the middle of that stack.
         Vec3 local = localPilePlace(column, depth, 0)
             .add(Vec3.atLowerCornerOf(axes.up().getNormal()).scale(-0.5));
-        Vec3 world = Sable.HELPER.projectOutOfSubLevel(serverLevel, local);
+        Vec3 world = toWorld(local);
         return BlockPos.containing(world.x, world.y - GAP_DEPTH, world.z);
     }
 
@@ -737,7 +850,7 @@ public class BulldozerBladeBlockEntity extends SmartBlockEntity implements Block
         if (serverLevel.isOutsideBuildHeight(place) || !serverLevel.isLoaded(place)) {
             return false;
         }
-        if (Sable.HELPER.getContaining(serverLevel, place) != null) {
+        if (WorldDig.isOnSimulatedContraption(serverLevel, place)) {
             return false;
         }
         return serverLevel.getBlockState(place).canBeReplaced();
@@ -763,7 +876,7 @@ public class BulldozerBladeBlockEntity extends SmartBlockEntity implements Block
             // How many stacks deep this column's pile currently is.
             int usedDepth = BladePile.slot(height, count - 1)[0];
             for (int depth = usedDepth; depth >= 0; depth--) {
-                BlockPos under = placeUnderPile(serverLevel, column, depth);
+                BlockPos under = placeUnderPile(column, depth);
                 if (isFree(serverLevel, under)) {
                     BulldozerBladeBlockEntity top = findTopOfColumn(column);
                     if (top != null) {
@@ -792,7 +905,7 @@ public class BulldozerBladeBlockEntity extends SmartBlockEntity implements Block
                 any = true;
                 Stored block = pile.get(index);
                 int depth = BladePile.slot(height, index)[0];
-                putDown(serverLevel, pilePlace(serverLevel, column, depth, 0), block.state(), block.blockEntityData());
+                putDown(serverLevel, pilePlace(column, depth, 0), block.state(), block.blockEntityData());
             }
         }
         if (!any) {
@@ -911,6 +1024,10 @@ public class BulldozerBladeBlockEntity extends SmartBlockEntity implements Block
             mount = tag.getBoolean(TAG_MOUNT_SHOWN) ? BladeMount.ENDS : BladeMount.NONE;
         } else {
             mount = BladeMount.CENTRE;
+        }
+        // Not saved: only ever in the data a Create contraption puts the block down with.
+        if (tag.getBoolean(ContraptionTool.TAG_REGROUP_AFTER_MOVE)) {
+            regroupAfterMove = true;
         }
     }
 }
