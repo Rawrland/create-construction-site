@@ -25,6 +25,17 @@ public final class Config {
         .comment("How many blocks above one dug block fall down at most.")
         .defineInRange("collapseMaxHeight", 16, 1, 64);
 
+    // --- driven hydraulic cylinders (add-cylinder-settings) ---
+
+    /**
+     * How quickly a driven cylinder may change its speed, in blocks per second per second.
+     * The cylinder sets its parts' speed directly, so this is the same for light and heavy parts.
+     */
+    public static final ModConfigSpec.DoubleValue CYLINDER_MAX_ACCELERATION = BUILDER
+        .comment("How quickly a driven hydraulic cylinder may speed up or slow down (blocks per second, per second). "
+            + "Higher: snappier starts and stops; lower: smoother, but heavy arms may sag a little more.")
+        .defineInRange("cylinderMaxAcceleration", 400.0, 1.0, 5000.0);
+
     static final ModConfigSpec SPEC = BUILDER.build();
 
     private Config() {

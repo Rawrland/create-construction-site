@@ -39,14 +39,16 @@ displayName="${mod_name}" #mandatory
 #logoFile="examplemod.png" #optional
 
 # A text field displayed in the mod UI
-#credits="" #optional
+credits="Built on Create by the Creators of Create, and Create Aeronautics / Sable by the Creators of Aeronautics. Contains none of their code or assets." #optional
 
 # The authors of the mod, displayed in the mod UI (optional)
-#authors=""
+authors="Rawrland"
 
 # The description text for the mod (multi line!) (#mandatory)
 description='''
-Realistic earthmoving and concrete work for Create Aeronautics: shovels, bulldozer blades, containers and concrete pumps that act on the world.
+Construction work for Create. Build your own excavator, bulldozer or dump truck, and the tools from this mod make it dig, push, carry and tip real blocks. Hydraulic cylinders move booms and arms, the Operator Console steers a whole machine from one desk, and traffic cones, barriers and site fences close off the site.
+
+Create Aeronautics is optional: with it, tools and cylinders work on physics vehicles.
 '''
 
 # The [[mixins]] block allows you to declare your mixin config to FML so that it gets loaded.

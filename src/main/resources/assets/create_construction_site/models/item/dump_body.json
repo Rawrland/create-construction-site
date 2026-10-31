@@ -2,7 +2,7 @@
   "parent": "minecraft:builtin/entity",
   "gui_light": "side",
   "textures": {
-    "particle": "create_construction_site:block/painted_steel_yellow"
+    "particle": "create_construction_site:block/brass"
   },
   "display": {
     "gui": {

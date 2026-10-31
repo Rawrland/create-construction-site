@@ -73,7 +73,9 @@ public class ExcavatorBucketItem extends BlockItem {
         Direction face = context.getClickedFace();
         BlockPos placing = context.getClickedPos();
         BlockPos against = placing.relative(face.getOpposite());
-        if (!(level.getBlockEntity(against) instanceof ExcavatorBucketBlockEntity bucket) || !bucket.isJoined()) {
+        if (!(level.getBlockEntity(against) instanceof ExcavatorBucketBlockEntity bucket) || !bucket.isJoined()
+            // Only the same colour joins, so a slice of another colour would not become part of it.
+            || level.getBlockState(against).getBlock() != getBlock()) {
             return null;
         }
 

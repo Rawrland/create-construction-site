@@ -1,0 +1,16 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "building",
+  "ingredients": [
+    {
+      "tag": "c:dyes/black"
+    },
+    {
+      "tag": "create_construction_site:bulldozer_blades"
+    }
+  ],
+  "result": {
+    "count": 1,
+    "id": "create_construction_site:black_bulldozer_blade"
+  }
+}

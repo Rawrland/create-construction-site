@@ -1,5 +1,7 @@
 package dev.rawrland.constructionsite;
 
+import net.minecraft.world.level.block.Block;
+import dev.rawrland.constructionsite.content.tool.PaintWashing;
 import com.mojang.logging.LogUtils;
 import com.simibubi.create.api.behaviour.interaction.MovingInteractionBehaviour;
 import com.simibubi.create.api.behaviour.movement.MovementBehaviour;
@@ -33,6 +35,7 @@ public class CreateConstructionSite {
         ModBlocks.register(modEventBus);
         ModItems.register(modEventBus);
         ModBlockEntities.register(modEventBus);
+        dev.rawrland.constructionsite.registry.ModMenus.register(modEventBus);
         ModEntities.register(modEventBus);
         ModCreativeTabs.register(modEventBus);
         modEventBus.addListener(ModNetwork::register);
@@ -49,11 +52,17 @@ public class CreateConstructionSite {
         event.enqueueWork(() -> {
             // Lets the bucket, blade and dump body work on Create's own contraptions (bearings, pistons, carts, trains).
             ToolMovementBehaviour tools = new ToolMovementBehaviour();
-            MovementBehaviour.REGISTRY.register(ModBlocks.EXCAVATOR_BUCKET.get(), tools);
-            MovementBehaviour.REGISTRY.register(ModBlocks.BULLDOZER_BLADE.get(), tools);
-            MovementBehaviour.REGISTRY.register(ModBlocks.DUMP_BODY.get(), tools);
-            // The wrench on a dump body while it moves on one of Create's contraptions.
-            MovingInteractionBehaviour.REGISTRY.register(ModBlocks.DUMP_BODY.get(), new DumpBodyMovingInteraction());
+            // Every paint version of every tool.
+            for (Block block : ModBlocks.EXCAVATOR_BUCKETS.blocks()) MovementBehaviour.REGISTRY.register(block, tools);
+            for (Block block : ModBlocks.BULLDOZER_BLADES.blocks()) MovementBehaviour.REGISTRY.register(block, tools);
+            DumpBodyMovingInteraction wrench = new DumpBodyMovingInteraction();
+            for (Block block : ModBlocks.DUMP_BODIES.blocks()) {
+                MovementBehaviour.REGISTRY.register(block, tools);
+                // The wrench on a dump body while it moves on one of Create's contraptions.
+                MovingInteractionBehaviour.REGISTRY.register(block, wrench);
+            }
+            // Washing paint off in a water cauldron.
+            PaintWashing.registerCauldron();
         });
     }
 }

@@ -1,0 +1,18 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "building",
+  "pattern": [
+    "#  ",
+    "## ",
+    "###"
+  ],
+  "key": {
+    "#": {
+      "item": "create_construction_site:cyan_brass_plating"
+    }
+  },
+  "result": {
+    "count": 4,
+    "id": "create_construction_site:cyan_brass_plating_stairs"
+  }
+}

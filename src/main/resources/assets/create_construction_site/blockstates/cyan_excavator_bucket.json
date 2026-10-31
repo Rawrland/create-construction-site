@@ -1,0 +1,28 @@
+{
+  "variants": {
+    "facing=north,joined=false": {
+      "model": "create_construction_site:block/cyan_excavator_bucket"
+    },
+    "facing=north,joined=true": {
+      "model": "create_construction_site:block/cyan_excavator_bucket"
+    },
+    "facing=east,joined=false": {
+      "model": "create_construction_site:block/cyan_excavator_bucket"
+    },
+    "facing=east,joined=true": {
+      "model": "create_construction_site:block/cyan_excavator_bucket"
+    },
+    "facing=south,joined=false": {
+      "model": "create_construction_site:block/cyan_excavator_bucket"
+    },
+    "facing=south,joined=true": {
+      "model": "create_construction_site:block/cyan_excavator_bucket"
+    },
+    "facing=west,joined=false": {
+      "model": "create_construction_site:block/cyan_excavator_bucket"
+    },
+    "facing=west,joined=true": {
+      "model": "create_construction_site:block/cyan_excavator_bucket"
+    }
+  }
+}

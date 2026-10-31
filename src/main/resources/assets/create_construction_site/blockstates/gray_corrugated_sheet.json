@@ -1,0 +1,16 @@
+{
+  "variants": {
+    "axis=y": {
+      "model": "create_construction_site:block/gray_corrugated_sheet"
+    },
+    "axis=z": {
+      "model": "create_construction_site:block/gray_corrugated_sheet",
+      "x": 90
+    },
+    "axis=x": {
+      "model": "create_construction_site:block/gray_corrugated_sheet",
+      "x": 90,
+      "y": 90
+    }
+  }
+}

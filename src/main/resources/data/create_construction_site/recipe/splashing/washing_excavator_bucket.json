@@ -1,0 +1,13 @@
+{
+  "type": "create:splashing",
+  "ingredients": [
+    {
+      "tag": "create_construction_site:painted_excavator_buckets"
+    }
+  ],
+  "results": [
+    {
+      "id": "create_construction_site:excavator_bucket"
+    }
+  ]
+}

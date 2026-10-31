@@ -862,14 +862,22 @@ public class DumpBodyBlockEntity extends SmartBlockEntity implements IHaveGoggle
 
     /** Empties this cell and drops what its content would drop if broken in the world with an unenchanted shovel tool. */
     public void dropContentAsBroken(ServerLevel serverLevel) {
+        BlockPos pos = getBlockPos();
+        for (ItemStack stack : removeContentAsBroken(serverLevel)) {
+            Containers.dropItemStack(serverLevel, pos.getX(), pos.getY(), pos.getZ(), stack);
+        }
+    }
+
+    /** Empties this cell and returns what its content would drop if broken with an unenchanted shovel tool. */
+    public List<ItemStack> removeContentAsBroken(ServerLevel serverLevel) {
+        List<ItemStack> drops = new ArrayList<>();
         if (storedState == null) {
-            return;
+            return drops;
         }
         BlockPos pos = getBlockPos();
         BlockEntity storedBlockEntity = storedBlockEntityData == null ? null
             : BlockEntity.loadStatic(pos, storedState, storedBlockEntityData, serverLevel.registryAccess());
-        List<ItemStack> drops = new ArrayList<>(
-            Block.getDrops(storedState, serverLevel, pos, storedBlockEntity, null, new ItemStack(Items.IRON_SHOVEL)));
+        drops.addAll(Block.getDrops(storedState, serverLevel, pos, storedBlockEntity, null, new ItemStack(Items.IRON_SHOVEL)));
         // Containers such as chests spill their items when broken; shulker boxes keep them inside.
         if (storedBlockEntity instanceof Container container && !(storedState.getBlock() instanceof ShulkerBoxBlock)) {
             for (int slot = 0; slot < container.getContainerSize(); slot++) {
@@ -882,9 +890,30 @@ public class DumpBodyBlockEntity extends SmartBlockEntity implements IHaveGoggle
         storedState = null;
         storedBlockEntityData = null;
         setChanged();
-        for (ItemStack stack : drops) {
-            Containers.dropItemStack(serverLevel, pos.getX(), pos.getY(), pos.getZ(), stack);
+        return drops;
+    }
+
+    /**
+     * The blocks of one slice of the dump body: the layer this block is in, lying flat
+     * against the clicked face (a wall layer for a side, a floor or top layer for top and
+     * bottom). The same layer that placing a dump body against that face would add.
+     */
+    public List<BlockPos> getLayerPositions(Direction face) {
+        List<BlockPos> result = new ArrayList<>();
+        BlockPos anchor = getBlockPos().offset(getAnchorOffset());
+        BlockPos self = getBlockPos().subtract(anchor);
+        Direction.Axis axis = face.getAxis();
+        for (int x = 0; x < getSizeX(); x++) {
+            for (int y = 0; y < getSizeY(); y++) {
+                for (int z = 0; z < getSizeZ(); z++) {
+                    BlockPos cell = new BlockPos(x, y, z);
+                    if (cell.get(axis) == self.get(axis)) {
+                        result.add(anchor.offset(cell));
+                    }
+                }
+            }
         }
+        return result;
     }
 
     // ------------------------------------------------- saving and sending

@@ -1,0 +1,10 @@
+{
+  "variants": {
+    "flipped=false": {
+      "model": "create_construction_site:block/hazard_stripes_red_white"
+    },
+    "flipped=true": {
+      "model": "create_construction_site:block/hazard_stripes_red_white_flipped"
+    }
+  }
+}

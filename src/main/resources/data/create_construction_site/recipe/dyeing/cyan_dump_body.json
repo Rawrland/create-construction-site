@@ -1,0 +1,16 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "building",
+  "ingredients": [
+    {
+      "tag": "c:dyes/cyan"
+    },
+    {
+      "tag": "create_construction_site:dump_bodies"
+    }
+  ],
+  "result": {
+    "count": 1,
+    "id": "create_construction_site:cyan_dump_body"
+  }
+}

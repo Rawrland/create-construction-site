@@ -1,0 +1,1910 @@
+{
+  "multipart": [
+    {
+      "when": {
+        "post": "true",
+        "half": "lower",
+        "bottom": "true"
+      },
+      "apply": {
+        "model": "create_construction_site:block/site_fence_post"
+      }
+    },
+    {
+      "when": {
+        "AND": [
+          {
+            "post": "true",
+            "half": "lower",
+            "bottom": "true"
+          },
+          {
+            "OR": [
+              {
+                "east": "true",
+                "west": "true"
+              },
+              {
+                "north": "true",
+                "south": "true"
+              },
+              {
+                "north": "true",
+                "east": "true"
+              },
+              {
+                "east": "true",
+                "south": "true"
+              },
+              {
+                "south": "true",
+                "west": "true"
+              },
+              {
+                "west": "true",
+                "north": "true"
+              }
+            ]
+          }
+        ]
+      },
+      "apply": {
+        "model": "create_construction_site:block/site_fence_clamp"
+      }
+    },
+    {
+      "when": {
+        "east": "true",
+        "half": "lower",
+        "bottom": "true"
+      },
+      "apply": {
+        "model": "create_construction_site:block/site_fence_east"
+      }
+    },
+    {
+      "when": {
+        "AND": [
+          {
+            "east": "true",
+            "tarp_south": "true",
+            "half": "lower",
+            "bottom": "true"
+          },
+          {
+            "OR": [
+              {
+                "tarp": "white"
+              },
+              {
+                "tarp": "orange"
+              },
+              {
+                "tarp": "magenta"
+              },
+              {
+                "tarp": "light_blue"
+              },
+              {
+                "tarp": "yellow"
+              },
+              {
+                "tarp": "lime"
+              },
+              {
+                "tarp": "pink"
+              },
+              {
+                "tarp": "gray"
+              },
+              {
+                "tarp": "light_gray"
+              },
+              {
+                "tarp": "cyan"
+              },
+              {
+                "tarp": "purple"
+              },
+              {
+                "tarp": "blue"
+              },
+              {
+                "tarp": "brown"
+              },
+              {
+                "tarp": "green"
+              },
+              {
+                "tarp": "red"
+              },
+              {
+                "tarp": "black"
+              }
+            ]
+          }
+        ]
+      },
+      "apply": {
+        "model": "create_construction_site:block/site_fence_tarp_east"
+      }
+    },
+    {
+      "when": {
+        "AND": [
+          {
+            "east": "true",
+            "tarp_south": "false",
+            "half": "lower",
+            "bottom": "true"
+          },
+          {
+            "OR": [
+              {
+                "tarp": "white"
+              },
+              {
+                "tarp": "orange"
+              },
+              {
+                "tarp": "magenta"
+              },
+              {
+                "tarp": "light_blue"
+              },
+              {
+                "tarp": "yellow"
+              },
+              {
+                "tarp": "lime"
+              },
+              {
+                "tarp": "pink"
+              },
+              {
+                "tarp": "gray"
+              },
+              {
+                "tarp": "light_gray"
+              },
+              {
+                "tarp": "cyan"
+              },
+              {
+                "tarp": "purple"
+              },
+              {
+                "tarp": "blue"
+              },
+              {
+                "tarp": "brown"
+              },
+              {
+                "tarp": "green"
+              },
+              {
+                "tarp": "red"
+              },
+              {
+                "tarp": "black"
+              }
+            ]
+          }
+        ]
+      },
+      "apply": {
+        "model": "create_construction_site:block/site_fence_tarp_east_back"
+      }
+    },
+    {
+      "when": {
+        "west": "true",
+        "half": "lower",
+        "bottom": "true"
+      },
+      "apply": {
+        "model": "create_construction_site:block/site_fence_west"
+      }
+    },
+    {
+      "when": {
+        "AND": [
+          {
+            "west": "true",
+            "tarp_south": "true",
+            "half": "lower",
+            "bottom": "true"
+          },
+          {
+            "OR": [
+              {
+                "tarp": "white"
+              },
+              {
+                "tarp": "orange"
+              },
+              {
+                "tarp": "magenta"
+              },
+              {
+                "tarp": "light_blue"
+              },
+              {
+                "tarp": "yellow"
+              },
+              {
+                "tarp": "lime"
+              },
+              {
+                "tarp": "pink"
+              },
+              {
+                "tarp": "gray"
+              },
+              {
+                "tarp": "light_gray"
+              },
+              {
+                "tarp": "cyan"
+              },
+              {
+                "tarp": "purple"
+              },
+              {
+                "tarp": "blue"
+              },
+              {
+                "tarp": "brown"
+              },
+              {
+                "tarp": "green"
+              },
+              {
+                "tarp": "red"
+              },
+              {
+                "tarp": "black"
+              }
+            ]
+          }
+        ]
+      },
+      "apply": {
+        "model": "create_construction_site:block/site_fence_tarp_west"
+      }
+    },
+    {
+      "when": {
+        "AND": [
+          {
+            "west": "true",
+            "tarp_south": "false",
+            "half": "lower",
+            "bottom": "true"
+          },
+          {
+            "OR": [
+              {
+                "tarp": "white"
+              },
+              {
+                "tarp": "orange"
+              },
+              {
+                "tarp": "magenta"
+              },
+              {
+                "tarp": "light_blue"
+              },
+              {
+                "tarp": "yellow"
+              },
+              {
+                "tarp": "lime"
+              },
+              {
+                "tarp": "pink"
+              },
+              {
+                "tarp": "gray"
+              },
+              {
+                "tarp": "light_gray"
+              },
+              {
+                "tarp": "cyan"
+              },
+              {
+                "tarp": "purple"
+              },
+              {
+                "tarp": "blue"
+              },
+              {
+                "tarp": "brown"
+              },
+              {
+                "tarp": "green"
+              },
+              {
+                "tarp": "red"
+              },
+              {
+                "tarp": "black"
+              }
+            ]
+          }
+        ]
+      },
+      "apply": {
+        "model": "create_construction_site:block/site_fence_tarp_west_back"
+      }
+    },
+    {
+      "when": {
+        "south": "true",
+        "half": "lower",
+        "bottom": "true"
+      },
+      "apply": {
+        "model": "create_construction_site:block/site_fence_south"
+      }
+    },
+    {
+      "when": {
+        "AND": [
+          {
+            "south": "true",
+            "tarp_east": "true",
+            "half": "lower",
+            "bottom": "true"
+          },
+          {
+            "OR": [
+              {
+                "tarp": "white"
+              },
+              {
+                "tarp": "orange"
+              },
+              {
+                "tarp": "magenta"
+              },
+              {
+                "tarp": "light_blue"
+              },
+              {
+                "tarp": "yellow"
+              },
+              {
+                "tarp": "lime"
+              },
+              {
+                "tarp": "pink"
+              },
+              {
+                "tarp": "gray"
+              },
+              {
+                "tarp": "light_gray"
+              },
+              {
+                "tarp": "cyan"
+              },
+              {
+                "tarp": "purple"
+              },
+              {
+                "tarp": "blue"
+              },
+              {
+                "tarp": "brown"
+              },
+              {
+                "tarp": "green"
+              },
+              {
+                "tarp": "red"
+              },
+              {
+                "tarp": "black"
+              }
+            ]
+          }
+        ]
+      },
+      "apply": {
+        "model": "create_construction_site:block/site_fence_tarp_south"
+      }
+    },
+    {
+      "when": {
+        "AND": [
+          {
+            "south": "true",
+            "tarp_east": "false",
+            "half": "lower",
+            "bottom": "true"
+          },
+          {
+            "OR": [
+              {
+                "tarp": "white"
+              },
+              {
+                "tarp": "orange"
+              },
+              {
+                "tarp": "magenta"
+              },
+              {
+                "tarp": "light_blue"
+              },
+              {
+                "tarp": "yellow"
+              },
+              {
+                "tarp": "lime"
+              },
+              {
+                "tarp": "pink"
+              },
+              {
+                "tarp": "gray"
+              },
+              {
+                "tarp": "light_gray"
+              },
+              {
+                "tarp": "cyan"
+              },
+              {
+                "tarp": "purple"
+              },
+              {
+                "tarp": "blue"
+              },
+              {
+                "tarp": "brown"
+              },
+              {
+                "tarp": "green"
+              },
+              {
+                "tarp": "red"
+              },
+              {
+                "tarp": "black"
+              }
+            ]
+          }
+        ]
+      },
+      "apply": {
+        "model": "create_construction_site:block/site_fence_tarp_south_back"
+      }
+    },
+    {
+      "when": {
+        "north": "true",
+        "half": "lower",
+        "bottom": "true"
+      },
+      "apply": {
+        "model": "create_construction_site:block/site_fence_north"
+      }
+    },
+    {
+      "when": {
+        "AND": [
+          {
+            "north": "true",
+            "tarp_east": "true",
+            "half": "lower",
+            "bottom": "true"
+          },
+          {
+            "OR": [
+              {
+                "tarp": "white"
+              },
+              {
+                "tarp": "orange"
+              },
+              {
+                "tarp": "magenta"
+              },
+              {
+                "tarp": "light_blue"
+              },
+              {
+                "tarp": "yellow"
+              },
+              {
+                "tarp": "lime"
+              },
+              {
+                "tarp": "pink"
+              },
+              {
+                "tarp": "gray"
+              },
+              {
+                "tarp": "light_gray"
+              },
+              {
+                "tarp": "cyan"
+              },
+              {
+                "tarp": "purple"
+              },
+              {
+                "tarp": "blue"
+              },
+              {
+                "tarp": "brown"
+              },
+              {
+                "tarp": "green"
+              },
+              {
+                "tarp": "red"
+              },
+              {
+                "tarp": "black"
+              }
+            ]
+          }
+        ]
+      },
+      "apply": {
+        "model": "create_construction_site:block/site_fence_tarp_north"
+      }
+    },
+    {
+      "when": {
+        "AND": [
+          {
+            "north": "true",
+            "tarp_east": "false",
+            "half": "lower",
+            "bottom": "true"
+          },
+          {
+            "OR": [
+              {
+                "tarp": "white"
+              },
+              {
+                "tarp": "orange"
+              },
+              {
+                "tarp": "magenta"
+              },
+              {
+                "tarp": "light_blue"
+              },
+              {
+                "tarp": "yellow"
+              },
+              {
+                "tarp": "lime"
+              },
+              {
+                "tarp": "pink"
+              },
+              {
+                "tarp": "gray"
+              },
+              {
+                "tarp": "light_gray"
+              },
+              {
+                "tarp": "cyan"
+              },
+              {
+                "tarp": "purple"
+              },
+              {
+                "tarp": "blue"
+              },
+              {
+                "tarp": "brown"
+              },
+              {
+                "tarp": "green"
+              },
+              {
+                "tarp": "red"
+              },
+              {
+                "tarp": "black"
+              }
+            ]
+          }
+        ]
+      },
+      "apply": {
+        "model": "create_construction_site:block/site_fence_tarp_north_back"
+      }
+    },
+    {
+      "when": {
+        "post": "true",
+        "half": "lower",
+        "bottom": "false"
+      },
+      "apply": {
+        "model": "create_construction_site:block/site_fence_post_stacked"
+      }
+    },
+    {
+      "when": {
+        "AND": [
+          {
+            "post": "true",
+            "half": "lower",
+            "bottom": "false"
+          },
+          {
+            "OR": [
+              {
+                "east": "true",
+                "west": "true"
+              },
+              {
+                "north": "true",
+                "south": "true"
+              },
+              {
+                "north": "true",
+                "east": "true"
+              },
+              {
+                "east": "true",
+                "south": "true"
+              },
+              {
+                "south": "true",
+                "west": "true"
+              },
+              {
+                "west": "true",
+                "north": "true"
+              }
+            ]
+          }
+        ]
+      },
+      "apply": {
+        "model": "create_construction_site:block/site_fence_clamp_stacked"
+      }
+    },
+    {
+      "when": {
+        "east": "true",
+        "half": "lower",
+        "bottom": "false"
+      },
+      "apply": {
+        "model": "create_construction_site:block/site_fence_east_stacked"
+      }
+    },
+    {
+      "when": {
+        "AND": [
+          {
+            "east": "true",
+            "tarp_south": "true",
+            "half": "lower",
+            "bottom": "false"
+          },
+          {
+            "OR": [
+              {
+                "tarp": "white"
+              },
+              {
+                "tarp": "orange"
+              },
+              {
+                "tarp": "magenta"
+              },
+              {
+                "tarp": "light_blue"
+              },
+              {
+                "tarp": "yellow"
+              },
+              {
+                "tarp": "lime"
+              },
+              {
+                "tarp": "pink"
+              },
+              {
+                "tarp": "gray"
+              },
+              {
+                "tarp": "light_gray"
+              },
+              {
+                "tarp": "cyan"
+              },
+              {
+                "tarp": "purple"
+              },
+              {
+                "tarp": "blue"
+              },
+              {
+                "tarp": "brown"
+              },
+              {
+                "tarp": "green"
+              },
+              {
+                "tarp": "red"
+              },
+              {
+                "tarp": "black"
+              }
+            ]
+          }
+        ]
+      },
+      "apply": {
+        "model": "create_construction_site:block/site_fence_tarp_east_stacked"
+      }
+    },
+    {
+      "when": {
+        "AND": [
+          {
+            "east": "true",
+            "tarp_south": "false",
+            "half": "lower",
+            "bottom": "false"
+          },
+          {
+            "OR": [
+              {
+                "tarp": "white"
+              },
+              {
+                "tarp": "orange"
+              },
+              {
+                "tarp": "magenta"
+              },
+              {
+                "tarp": "light_blue"
+              },
+              {
+                "tarp": "yellow"
+              },
+              {
+                "tarp": "lime"
+              },
+              {
+                "tarp": "pink"
+              },
+              {
+                "tarp": "gray"
+              },
+              {
+                "tarp": "light_gray"
+              },
+              {
+                "tarp": "cyan"
+              },
+              {
+                "tarp": "purple"
+              },
+              {
+                "tarp": "blue"
+              },
+              {
+                "tarp": "brown"
+              },
+              {
+                "tarp": "green"
+              },
+              {
+                "tarp": "red"
+              },
+              {
+                "tarp": "black"
+              }
+            ]
+          }
+        ]
+      },
+      "apply": {
+        "model": "create_construction_site:block/site_fence_tarp_east_stacked_back"
+      }
+    },
+    {
+      "when": {
+        "west": "true",
+        "half": "lower",
+        "bottom": "false"
+      },
+      "apply": {
+        "model": "create_construction_site:block/site_fence_west_stacked"
+      }
+    },
+    {
+      "when": {
+        "AND": [
+          {
+            "west": "true",
+            "tarp_south": "true",
+            "half": "lower",
+            "bottom": "false"
+          },
+          {
+            "OR": [
+              {
+                "tarp": "white"
+              },
+              {
+                "tarp": "orange"
+              },
+              {
+                "tarp": "magenta"
+              },
+              {
+                "tarp": "light_blue"
+              },
+              {
+                "tarp": "yellow"
+              },
+              {
+                "tarp": "lime"
+              },
+              {
+                "tarp": "pink"
+              },
+              {
+                "tarp": "gray"
+              },
+              {
+                "tarp": "light_gray"
+              },
+              {
+                "tarp": "cyan"
+              },
+              {
+                "tarp": "purple"
+              },
+              {
+                "tarp": "blue"
+              },
+              {
+                "tarp": "brown"
+              },
+              {
+                "tarp": "green"
+              },
+              {
+                "tarp": "red"
+              },
+              {
+                "tarp": "black"
+              }
+            ]
+          }
+        ]
+      },
+      "apply": {
+        "model": "create_construction_site:block/site_fence_tarp_west_stacked"
+      }
+    },
+    {
+      "when": {
+        "AND": [
+          {
+            "west": "true",
+            "tarp_south": "false",
+            "half": "lower",
+            "bottom": "false"
+          },
+          {
+            "OR": [
+              {
+                "tarp": "white"
+              },
+              {
+                "tarp": "orange"
+              },
+              {
+                "tarp": "magenta"
+              },
+              {
+                "tarp": "light_blue"
+              },
+              {
+                "tarp": "yellow"
+              },
+              {
+                "tarp": "lime"
+              },
+              {
+                "tarp": "pink"
+              },
+              {
+                "tarp": "gray"
+              },
+              {
+                "tarp": "light_gray"
+              },
+              {
+                "tarp": "cyan"
+              },
+              {
+                "tarp": "purple"
+              },
+              {
+                "tarp": "blue"
+              },
+              {
+                "tarp": "brown"
+              },
+              {
+                "tarp": "green"
+              },
+              {
+                "tarp": "red"
+              },
+              {
+                "tarp": "black"
+              }
+            ]
+          }
+        ]
+      },
+      "apply": {
+        "model": "create_construction_site:block/site_fence_tarp_west_stacked_back"
+      }
+    },
+    {
+      "when": {
+        "south": "true",
+        "half": "lower",
+        "bottom": "false"
+      },
+      "apply": {
+        "model": "create_construction_site:block/site_fence_south_stacked"
+      }
+    },
+    {
+      "when": {
+        "AND": [
+          {
+            "south": "true",
+            "tarp_east": "true",
+            "half": "lower",
+            "bottom": "false"
+          },
+          {
+            "OR": [
+              {
+                "tarp": "white"
+              },
+              {
+                "tarp": "orange"
+              },
+              {
+                "tarp": "magenta"
+              },
+              {
+                "tarp": "light_blue"
+              },
+              {
+                "tarp": "yellow"
+              },
+              {
+                "tarp": "lime"
+              },
+              {
+                "tarp": "pink"
+              },
+              {
+                "tarp": "gray"
+              },
+              {
+                "tarp": "light_gray"
+              },
+              {
+                "tarp": "cyan"
+              },
+              {
+                "tarp": "purple"
+              },
+              {
+                "tarp": "blue"
+              },
+              {
+                "tarp": "brown"
+              },
+              {
+                "tarp": "green"
+              },
+              {
+                "tarp": "red"
+              },
+              {
+                "tarp": "black"
+              }
+            ]
+          }
+        ]
+      },
+      "apply": {
+        "model": "create_construction_site:block/site_fence_tarp_south_stacked"
+      }
+    },
+    {
+      "when": {
+        "AND": [
+          {
+            "south": "true",
+            "tarp_east": "false",
+            "half": "lower",
+            "bottom": "false"
+          },
+          {
+            "OR": [
+              {
+                "tarp": "white"
+              },
+              {
+                "tarp": "orange"
+              },
+              {
+                "tarp": "magenta"
+              },
+              {
+                "tarp": "light_blue"
+              },
+              {
+                "tarp": "yellow"
+              },
+              {
+                "tarp": "lime"
+              },
+              {
+                "tarp": "pink"
+              },
+              {
+                "tarp": "gray"
+              },
+              {
+                "tarp": "light_gray"
+              },
+              {
+                "tarp": "cyan"
+              },
+              {
+                "tarp": "purple"
+              },
+              {
+                "tarp": "blue"
+              },
+              {
+                "tarp": "brown"
+              },
+              {
+                "tarp": "green"
+              },
+              {
+                "tarp": "red"
+              },
+              {
+                "tarp": "black"
+              }
+            ]
+          }
+        ]
+      },
+      "apply": {
+        "model": "create_construction_site:block/site_fence_tarp_south_stacked_back"
+      }
+    },
+    {
+      "when": {
+        "north": "true",
+        "half": "lower",
+        "bottom": "false"
+      },
+      "apply": {
+        "model": "create_construction_site:block/site_fence_north_stacked"
+      }
+    },
+    {
+      "when": {
+        "AND": [
+          {
+            "north": "true",
+            "tarp_east": "true",
+            "half": "lower",
+            "bottom": "false"
+          },
+          {
+            "OR": [
+              {
+                "tarp": "white"
+              },
+              {
+                "tarp": "orange"
+              },
+              {
+                "tarp": "magenta"
+              },
+              {
+                "tarp": "light_blue"
+              },
+              {
+                "tarp": "yellow"
+              },
+              {
+                "tarp": "lime"
+              },
+              {
+                "tarp": "pink"
+              },
+              {
+                "tarp": "gray"
+              },
+              {
+                "tarp": "light_gray"
+              },
+              {
+                "tarp": "cyan"
+              },
+              {
+                "tarp": "purple"
+              },
+              {
+                "tarp": "blue"
+              },
+              {
+                "tarp": "brown"
+              },
+              {
+                "tarp": "green"
+              },
+              {
+                "tarp": "red"
+              },
+              {
+                "tarp": "black"
+              }
+            ]
+          }
+        ]
+      },
+      "apply": {
+        "model": "create_construction_site:block/site_fence_tarp_north_stacked"
+      }
+    },
+    {
+      "when": {
+        "AND": [
+          {
+            "north": "true",
+            "tarp_east": "false",
+            "half": "lower",
+            "bottom": "false"
+          },
+          {
+            "OR": [
+              {
+                "tarp": "white"
+              },
+              {
+                "tarp": "orange"
+              },
+              {
+                "tarp": "magenta"
+              },
+              {
+                "tarp": "light_blue"
+              },
+              {
+                "tarp": "yellow"
+              },
+              {
+                "tarp": "lime"
+              },
+              {
+                "tarp": "pink"
+              },
+              {
+                "tarp": "gray"
+              },
+              {
+                "tarp": "light_gray"
+              },
+              {
+                "tarp": "cyan"
+              },
+              {
+                "tarp": "purple"
+              },
+              {
+                "tarp": "blue"
+              },
+              {
+                "tarp": "brown"
+              },
+              {
+                "tarp": "green"
+              },
+              {
+                "tarp": "red"
+              },
+              {
+                "tarp": "black"
+              }
+            ]
+          }
+        ]
+      },
+      "apply": {
+        "model": "create_construction_site:block/site_fence_tarp_north_stacked_back"
+      }
+    },
+    {
+      "when": {
+        "post": "true",
+        "half": "upper"
+      },
+      "apply": {
+        "model": "create_construction_site:block/site_fence_post_upper"
+      }
+    },
+    {
+      "when": {
+        "AND": [
+          {
+            "post": "true",
+            "half": "upper"
+          },
+          {
+            "OR": [
+              {
+                "east": "true",
+                "west": "true"
+              },
+              {
+                "north": "true",
+                "south": "true"
+              },
+              {
+                "north": "true",
+                "east": "true"
+              },
+              {
+                "east": "true",
+                "south": "true"
+              },
+              {
+                "south": "true",
+                "west": "true"
+              },
+              {
+                "west": "true",
+                "north": "true"
+              }
+            ]
+          }
+        ]
+      },
+      "apply": {
+        "model": "create_construction_site:block/site_fence_clamp_upper"
+      }
+    },
+    {
+      "when": {
+        "east": "true",
+        "half": "upper"
+      },
+      "apply": {
+        "model": "create_construction_site:block/site_fence_east_upper"
+      }
+    },
+    {
+      "when": {
+        "AND": [
+          {
+            "east": "true",
+            "tarp_south": "true",
+            "half": "upper"
+          },
+          {
+            "OR": [
+              {
+                "tarp": "white"
+              },
+              {
+                "tarp": "orange"
+              },
+              {
+                "tarp": "magenta"
+              },
+              {
+                "tarp": "light_blue"
+              },
+              {
+                "tarp": "yellow"
+              },
+              {
+                "tarp": "lime"
+              },
+              {
+                "tarp": "pink"
+              },
+              {
+                "tarp": "gray"
+              },
+              {
+                "tarp": "light_gray"
+              },
+              {
+                "tarp": "cyan"
+              },
+              {
+                "tarp": "purple"
+              },
+              {
+                "tarp": "blue"
+              },
+              {
+                "tarp": "brown"
+              },
+              {
+                "tarp": "green"
+              },
+              {
+                "tarp": "red"
+              },
+              {
+                "tarp": "black"
+              }
+            ]
+          }
+        ]
+      },
+      "apply": {
+        "model": "create_construction_site:block/site_fence_tarp_east_upper"
+      }
+    },
+    {
+      "when": {
+        "AND": [
+          {
+            "east": "true",
+            "tarp_south": "false",
+            "half": "upper"
+          },
+          {
+            "OR": [
+              {
+                "tarp": "white"
+              },
+              {
+                "tarp": "orange"
+              },
+              {
+                "tarp": "magenta"
+              },
+              {
+                "tarp": "light_blue"
+              },
+              {
+                "tarp": "yellow"
+              },
+              {
+                "tarp": "lime"
+              },
+              {
+                "tarp": "pink"
+              },
+              {
+                "tarp": "gray"
+              },
+              {
+                "tarp": "light_gray"
+              },
+              {
+                "tarp": "cyan"
+              },
+              {
+                "tarp": "purple"
+              },
+              {
+                "tarp": "blue"
+              },
+              {
+                "tarp": "brown"
+              },
+              {
+                "tarp": "green"
+              },
+              {
+                "tarp": "red"
+              },
+              {
+                "tarp": "black"
+              }
+            ]
+          }
+        ]
+      },
+      "apply": {
+        "model": "create_construction_site:block/site_fence_tarp_east_upper_back"
+      }
+    },
+    {
+      "when": {
+        "west": "true",
+        "half": "upper"
+      },
+      "apply": {
+        "model": "create_construction_site:block/site_fence_west_upper"
+      }
+    },
+    {
+      "when": {
+        "AND": [
+          {
+            "west": "true",
+            "tarp_south": "true",
+            "half": "upper"
+          },
+          {
+            "OR": [
+              {
+                "tarp": "white"
+              },
+              {
+                "tarp": "orange"
+              },
+              {
+                "tarp": "magenta"
+              },
+              {
+                "tarp": "light_blue"
+              },
+              {
+                "tarp": "yellow"
+              },
+              {
+                "tarp": "lime"
+              },
+              {
+                "tarp": "pink"
+              },
+              {
+                "tarp": "gray"
+              },
+              {
+                "tarp": "light_gray"
+              },
+              {
+                "tarp": "cyan"
+              },
+              {
+                "tarp": "purple"
+              },
+              {
+                "tarp": "blue"
+              },
+              {
+                "tarp": "brown"
+              },
+              {
+                "tarp": "green"
+              },
+              {
+                "tarp": "red"
+              },
+              {
+                "tarp": "black"
+              }
+            ]
+          }
+        ]
+      },
+      "apply": {
+        "model": "create_construction_site:block/site_fence_tarp_west_upper"
+      }
+    },
+    {
+      "when": {
+        "AND": [
+          {
+            "west": "true",
+            "tarp_south": "false",
+            "half": "upper"
+          },
+          {
+            "OR": [
+              {
+                "tarp": "white"
+              },
+              {
+                "tarp": "orange"
+              },
+              {
+                "tarp": "magenta"
+              },
+              {
+                "tarp": "light_blue"
+              },
+              {
+                "tarp": "yellow"
+              },
+              {
+                "tarp": "lime"
+              },
+              {
+                "tarp": "pink"
+              },
+              {
+                "tarp": "gray"
+              },
+              {
+                "tarp": "light_gray"
+              },
+              {
+                "tarp": "cyan"
+              },
+              {
+                "tarp": "purple"
+              },
+              {
+                "tarp": "blue"
+              },
+              {
+                "tarp": "brown"
+              },
+              {
+                "tarp": "green"
+              },
+              {
+                "tarp": "red"
+              },
+              {
+                "tarp": "black"
+              }
+            ]
+          }
+        ]
+      },
+      "apply": {
+        "model": "create_construction_site:block/site_fence_tarp_west_upper_back"
+      }
+    },
+    {
+      "when": {
+        "south": "true",
+        "half": "upper"
+      },
+      "apply": {
+        "model": "create_construction_site:block/site_fence_south_upper"
+      }
+    },
+    {
+      "when": {
+        "AND": [
+          {
+            "south": "true",
+            "tarp_east": "true",
+            "half": "upper"
+          },
+          {
+            "OR": [
+              {
+                "tarp": "white"
+              },
+              {
+                "tarp": "orange"
+              },
+              {
+                "tarp": "magenta"
+              },
+              {
+                "tarp": "light_blue"
+              },
+              {
+                "tarp": "yellow"
+              },
+              {
+                "tarp": "lime"
+              },
+              {
+                "tarp": "pink"
+              },
+              {
+                "tarp": "gray"
+              },
+              {
+                "tarp": "light_gray"
+              },
+              {
+                "tarp": "cyan"
+              },
+              {
+                "tarp": "purple"
+              },
+              {
+                "tarp": "blue"
+              },
+              {
+                "tarp": "brown"
+              },
+              {
+                "tarp": "green"
+              },
+              {
+                "tarp": "red"
+              },
+              {
+                "tarp": "black"
+              }
+            ]
+          }
+        ]
+      },
+      "apply": {
+        "model": "create_construction_site:block/site_fence_tarp_south_upper"
+      }
+    },
+    {
+      "when": {
+        "AND": [
+          {
+            "south": "true",
+            "tarp_east": "false",
+            "half": "upper"
+          },
+          {
+            "OR": [
+              {
+                "tarp": "white"
+              },
+              {
+                "tarp": "orange"
+              },
+              {
+                "tarp": "magenta"
+              },
+              {
+                "tarp": "light_blue"
+              },
+              {
+                "tarp": "yellow"
+              },
+              {
+                "tarp": "lime"
+              },
+              {
+                "tarp": "pink"
+              },
+              {
+                "tarp": "gray"
+              },
+              {
+                "tarp": "light_gray"
+              },
+              {
+                "tarp": "cyan"
+              },
+              {
+                "tarp": "purple"
+              },
+              {
+                "tarp": "blue"
+              },
+              {
+                "tarp": "brown"
+              },
+              {
+                "tarp": "green"
+              },
+              {
+                "tarp": "red"
+              },
+              {
+                "tarp": "black"
+              }
+            ]
+          }
+        ]
+      },
+      "apply": {
+        "model": "create_construction_site:block/site_fence_tarp_south_upper_back"
+      }
+    },
+    {
+      "when": {
+        "north": "true",
+        "half": "upper"
+      },
+      "apply": {
+        "model": "create_construction_site:block/site_fence_north_upper"
+      }
+    },
+    {
+      "when": {
+        "AND": [
+          {
+            "north": "true",
+            "tarp_east": "true",
+            "half": "upper"
+          },
+          {
+            "OR": [
+              {
+                "tarp": "white"
+              },
+              {
+                "tarp": "orange"
+              },
+              {
+                "tarp": "magenta"
+              },
+              {
+                "tarp": "light_blue"
+              },
+              {
+                "tarp": "yellow"
+              },
+              {
+                "tarp": "lime"
+              },
+              {
+                "tarp": "pink"
+              },
+              {
+                "tarp": "gray"
+              },
+              {
+                "tarp": "light_gray"
+              },
+              {
+                "tarp": "cyan"
+              },
+              {
+                "tarp": "purple"
+              },
+              {
+                "tarp": "blue"
+              },
+              {
+                "tarp": "brown"
+              },
+              {
+                "tarp": "green"
+              },
+              {
+                "tarp": "red"
+              },
+              {
+                "tarp": "black"
+              }
+            ]
+          }
+        ]
+      },
+      "apply": {
+        "model": "create_construction_site:block/site_fence_tarp_north_upper"
+      }
+    },
+    {
+      "when": {
+        "AND": [
+          {
+            "north": "true",
+            "tarp_east": "false",
+            "half": "upper"
+          },
+          {
+            "OR": [
+              {
+                "tarp": "white"
+              },
+              {
+                "tarp": "orange"
+              },
+              {
+                "tarp": "magenta"
+              },
+              {
+                "tarp": "light_blue"
+              },
+              {
+                "tarp": "yellow"
+              },
+              {
+                "tarp": "lime"
+              },
+              {
+                "tarp": "pink"
+              },
+              {
+                "tarp": "gray"
+              },
+              {
+                "tarp": "light_gray"
+              },
+              {
+                "tarp": "cyan"
+              },
+              {
+                "tarp": "purple"
+              },
+              {
+                "tarp": "blue"
+              },
+              {
+                "tarp": "brown"
+              },
+              {
+                "tarp": "green"
+              },
+              {
+                "tarp": "red"
+              },
+              {
+                "tarp": "black"
+              }
+            ]
+          }
+        ]
+      },
+      "apply": {
+        "model": "create_construction_site:block/site_fence_tarp_north_upper_back"
+      }
+    },
+    {
+      "when": {
+        "AND": [
+          {
+            "half": "lower",
+            "bottom": "true",
+            "post": "true"
+          },
+          {
+            "OR": [
+              {
+                "east": "true"
+              },
+              {
+                "west": "true"
+              }
+            ]
+          }
+        ]
+      },
+      "apply": {
+        "model": "create_construction_site:block/site_fence_foot_z"
+      }
+    },
+    {
+      "when": {
+        "half": "lower",
+        "bottom": "true",
+        "post": "true",
+        "east": "false",
+        "west": "false"
+      },
+      "apply": {
+        "model": "create_construction_site:block/site_fence_foot_x"
+      }
+    }
+  ]
+}

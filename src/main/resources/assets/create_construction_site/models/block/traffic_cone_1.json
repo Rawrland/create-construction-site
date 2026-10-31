@@ -1,0 +1,282 @@
+{
+  "parent": "minecraft:block/block",
+  "textures": {
+    "orange": "create_construction_site:block/traffic_cone_orange",
+    "white": "create_construction_site:block/traffic_cone_white",
+    "particle": "create_construction_site:block/traffic_cone_orange"
+  },
+  "elements": [
+    {
+      "from": [
+        2.5,
+        0,
+        2.5
+      ],
+      "to": [
+        13.5,
+        1,
+        13.5
+      ],
+      "faces": {
+        "north": {
+          "texture": "#orange",
+          "uv": [
+            13.5,
+            15,
+            2.5,
+            16
+          ]
+        },
+        "east": {
+          "texture": "#orange",
+          "uv": [
+            13.5,
+            15,
+            2.5,
+            16
+          ]
+        },
+        "south": {
+          "texture": "#orange",
+          "uv": [
+            2.5,
+            15,
+            13.5,
+            16
+          ]
+        },
+        "west": {
+          "texture": "#orange",
+          "uv": [
+            2.5,
+            15,
+            13.5,
+            16
+          ]
+        },
+        "up": {
+          "texture": "#orange",
+          "uv": [
+            2.5,
+            2.5,
+            13.5,
+            13.5
+          ]
+        },
+        "down": {
+          "texture": "#orange",
+          "uv": [
+            2.5,
+            2.5,
+            13.5,
+            13.5
+          ]
+        }
+      }
+    },
+    {
+      "from": [
+        4.5,
+        1,
+        4.5
+      ],
+      "to": [
+        11.5,
+        5,
+        11.5
+      ],
+      "faces": {
+        "north": {
+          "texture": "#orange",
+          "uv": [
+            11.5,
+            11,
+            4.5,
+            15
+          ]
+        },
+        "east": {
+          "texture": "#orange",
+          "uv": [
+            11.5,
+            11,
+            4.5,
+            15
+          ]
+        },
+        "south": {
+          "texture": "#orange",
+          "uv": [
+            4.5,
+            11,
+            11.5,
+            15
+          ]
+        },
+        "west": {
+          "texture": "#orange",
+          "uv": [
+            4.5,
+            11,
+            11.5,
+            15
+          ]
+        },
+        "up": {
+          "texture": "#orange",
+          "uv": [
+            4.5,
+            4.5,
+            11.5,
+            11.5
+          ]
+        },
+        "down": {
+          "texture": "#orange",
+          "uv": [
+            4.5,
+            4.5,
+            11.5,
+            11.5
+          ]
+        }
+      }
+    },
+    {
+      "from": [
+        5.5,
+        5,
+        5.5
+      ],
+      "to": [
+        10.5,
+        8,
+        10.5
+      ],
+      "faces": {
+        "north": {
+          "texture": "#white",
+          "uv": [
+            10.5,
+            8,
+            5.5,
+            11
+          ]
+        },
+        "east": {
+          "texture": "#white",
+          "uv": [
+            10.5,
+            8,
+            5.5,
+            11
+          ]
+        },
+        "south": {
+          "texture": "#white",
+          "uv": [
+            5.5,
+            8,
+            10.5,
+            11
+          ]
+        },
+        "west": {
+          "texture": "#white",
+          "uv": [
+            5.5,
+            8,
+            10.5,
+            11
+          ]
+        },
+        "up": {
+          "texture": "#white",
+          "uv": [
+            5.5,
+            5.5,
+            10.5,
+            10.5
+          ]
+        },
+        "down": {
+          "texture": "#white",
+          "uv": [
+            5.5,
+            5.5,
+            10.5,
+            10.5
+          ]
+        }
+      }
+    },
+    {
+      "from": [
+        6.5,
+        8,
+        6.5
+      ],
+      "to": [
+        9.5,
+        12,
+        9.5
+      ],
+      "faces": {
+        "north": {
+          "texture": "#orange",
+          "uv": [
+            9.5,
+            4,
+            6.5,
+            8
+          ]
+        },
+        "east": {
+          "texture": "#orange",
+          "uv": [
+            9.5,
+            4,
+            6.5,
+            8
+          ]
+        },
+        "south": {
+          "texture": "#orange",
+          "uv": [
+            6.5,
+            4,
+            9.5,
+            8
+          ]
+        },
+        "west": {
+          "texture": "#orange",
+          "uv": [
+            6.5,
+            4,
+            9.5,
+            8
+          ]
+        },
+        "up": {
+          "texture": "#orange",
+          "uv": [
+            6.5,
+            6.5,
+            9.5,
+            9.5
+          ]
+        },
+        "down": {
+          "texture": "#orange",
+          "uv": [
+            6.5,
+            6.5,
+            9.5,
+            9.5
+          ]
+        }
+      }
+    }
+  ]
+}

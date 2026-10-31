@@ -1,0 +1,10 @@
+{
+  "type": "minecraft:stonecutting",
+  "ingredient": {
+    "item": "create_construction_site:hazard_stripes_red_white"
+  },
+  "result": {
+    "count": 4,
+    "id": "create_construction_site:hazard_plate_red_white"
+  }
+}

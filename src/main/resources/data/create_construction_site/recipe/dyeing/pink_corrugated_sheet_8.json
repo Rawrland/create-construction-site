@@ -1,0 +1,22 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "building",
+  "group": "create_construction_site:dyed_corrugated_sheet",
+  "pattern": [
+    "###",
+    "#D#",
+    "###"
+  ],
+  "key": {
+    "#": {
+      "tag": "create_construction_site:corrugated_sheets"
+    },
+    "D": {
+      "tag": "c:dyes/pink"
+    }
+  },
+  "result": {
+    "count": 8,
+    "id": "create_construction_site:pink_corrugated_sheet"
+  }
+}

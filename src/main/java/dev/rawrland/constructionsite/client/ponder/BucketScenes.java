@@ -41,7 +41,7 @@ final class BucketScenes {
     /**
      * First a single bucket on its own. Then a 2 and a 3 high bucket behind it. Each starts one block wide and
      * grows a block on each side at a time until it is as wide as it can be (3, 5, 7).
-     * Then the wrench on the biggest one: the mount, and picking up a slice.
+     * Then the wrench on the biggest one: the mount. (Picking up a slice is not shown, owner, 27 October 2026.)
      */
     static void sizes(SceneBuilder scene, SceneBuildingUtil util) {
         scene.title("excavator_bucket_sizes", "Sizes and the Wrench");
@@ -135,23 +135,6 @@ final class BucketScenes {
         scene.rotateCameraY(-180);
         scene.idle(25);
 
-        // Sneaking with the wrench picks up one slice: the biggest bucket's right end.
-        Selection endSlice = sliceAt(util, 6, 3, 1);
-        scene.overlay().showControls(util.vector().topOf(6, 3, 1), Pointing.DOWN, 30)
-            .rightClick()
-            .whileSneaking()
-            .withItem(AllItems.WRENCH.asStack());
-        scene.idle(10);
-        scene.world().hideSection(endSlice, Direction.UP);
-        ToolSceneHelper.separateBuckets(scene, endSlice);
-        ToolSceneHelper.joinBuckets(scene, util.select().fromTo(6, 1, 2, 8, 3, 7), util.grid().at(6, 1, 7), 3, 6);
-        scene.idle(15);
-        scene.overlay().showText(80)
-            .text("Sneak and use a Wrench to pick up a whole slice of a bucket")
-            .pointAt(util.vector().topOf(6, 3, 2))
-            .placeNearTarget()
-            .attachKeyFrame();
-        scene.idle(90);
         scene.markAsFinished();
     }
 

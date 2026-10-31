@@ -1,0 +1,22 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "building",
+  "group": "create_construction_site:dyed_brass_plating",
+  "pattern": [
+    "###",
+    "#D#",
+    "###"
+  ],
+  "key": {
+    "#": {
+      "tag": "create_construction_site:brass_platings"
+    },
+    "D": {
+      "tag": "c:dyes/green"
+    }
+  },
+  "result": {
+    "count": 8,
+    "id": "create_construction_site:green_brass_plating"
+  }
+}

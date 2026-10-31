@@ -1,0 +1,12 @@
+{
+  "parent": "minecraft:block/cube",
+  "textures": {
+    "particle": "create_construction_site:block/hazard_stripes_red_white",
+    "north": "create_construction_site:block/hazard_stripes_red_white_flipped_north",
+    "east": "create_construction_site:block/hazard_stripes_red_white_flipped_east",
+    "south": "create_construction_site:block/hazard_stripes_red_white_flipped_south",
+    "west": "create_construction_site:block/hazard_stripes_red_white_flipped_west",
+    "up": "create_construction_site:block/hazard_stripes_red_white_flipped_up",
+    "down": "create_construction_site:block/hazard_stripes_red_white_flipped_down"
+  }
+}

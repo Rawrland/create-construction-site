@@ -1,0 +1,28 @@
+{
+  "variants": {
+    "facing=north,joined=false": {
+      "model": "create_construction_site:block/white_bulldozer_blade"
+    },
+    "facing=north,joined=true": {
+      "model": "create_construction_site:block/white_bulldozer_blade"
+    },
+    "facing=east,joined=false": {
+      "model": "create_construction_site:block/white_bulldozer_blade"
+    },
+    "facing=east,joined=true": {
+      "model": "create_construction_site:block/white_bulldozer_blade"
+    },
+    "facing=south,joined=false": {
+      "model": "create_construction_site:block/white_bulldozer_blade"
+    },
+    "facing=south,joined=true": {
+      "model": "create_construction_site:block/white_bulldozer_blade"
+    },
+    "facing=west,joined=false": {
+      "model": "create_construction_site:block/white_bulldozer_blade"
+    },
+    "facing=west,joined=true": {
+      "model": "create_construction_site:block/white_bulldozer_blade"
+    }
+  }
+}

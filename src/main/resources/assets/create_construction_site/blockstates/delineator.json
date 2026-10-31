@@ -1,0 +1,34 @@
+{
+  "variants": {
+    "facing=north,flipped=false": {
+      "model": "create_construction_site:block/delineator"
+    },
+    "facing=north,flipped=true": {
+      "model": "create_construction_site:block/delineator_flipped"
+    },
+    "facing=east,flipped=false": {
+      "model": "create_construction_site:block/delineator",
+      "y": 90
+    },
+    "facing=east,flipped=true": {
+      "model": "create_construction_site:block/delineator_flipped",
+      "y": 90
+    },
+    "facing=south,flipped=false": {
+      "model": "create_construction_site:block/delineator",
+      "y": 180
+    },
+    "facing=south,flipped=true": {
+      "model": "create_construction_site:block/delineator_flipped",
+      "y": 180
+    },
+    "facing=west,flipped=false": {
+      "model": "create_construction_site:block/delineator",
+      "y": 270
+    },
+    "facing=west,flipped=true": {
+      "model": "create_construction_site:block/delineator_flipped",
+      "y": 270
+    }
+  }
+}

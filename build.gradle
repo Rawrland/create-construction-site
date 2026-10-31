@@ -66,6 +66,10 @@ neoForge {
 
         server {
             server()
+            // Its own folder: Sable unpacks its native library into the game folder at start, and a
+            // client running from run/ keeps that file locked, so a server there fails with
+            // AccessDeniedException (31 October 2026).
+            gameDirectory = project.file('run-server')
             programArgument '--nogui'
             systemProperty 'neoforge.enabledGameTestNamespaces', project.mod_id
         }
@@ -129,6 +133,16 @@ dependencies {
     implementation("net.createmod.ponder:ponder-neoforge:${ponder_version}+mc${minecraft_version}")
     implementation("dev.engine-room.flywheel:flywheel-neoforge-${minecraft_version}:${flywheel_version}")
     implementation("com.tterrag.registrate:Registrate:${registrate_version}")
+
+    // --- Sable Companion (MIT): Sable's small public API, bundled into this mod ---
+    // Works with and without Create Aeronautics: without Sable it answers "not on a
+    // contraption"; with Sable installed, Sable answers instead. Used by the hydraulic
+    // cylinder to find where its two ends are. See docs/notes/sable-companion.md.
+    jarJar(implementation("dev.ryanhcode.sable-companion:sable-companion-common-${minecraft_version}:[${sable_companion_version},)")) {
+        version {
+            prefer(sable_companion_version)
+        }
+    }
 
     // --- Create Aeronautics: Sable (physics), Simulated (core), Aeronautics, Offroad ---
     // Optional for players (see neoforge.mods.toml). They are always needed to compile the

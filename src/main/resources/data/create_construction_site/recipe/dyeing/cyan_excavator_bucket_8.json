@@ -1,0 +1,22 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "building",
+  "group": "create_construction_site:dyed_excavator_bucket",
+  "pattern": [
+    "###",
+    "#D#",
+    "###"
+  ],
+  "key": {
+    "#": {
+      "tag": "create_construction_site:excavator_buckets"
+    },
+    "D": {
+      "tag": "c:dyes/cyan"
+    }
+  },
+  "result": {
+    "count": 8,
+    "id": "create_construction_site:cyan_excavator_bucket"
+  }
+}

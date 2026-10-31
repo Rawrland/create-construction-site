@@ -1,0 +1,22 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "building",
+  "group": "create_construction_site:dyed_bulldozer_blade",
+  "pattern": [
+    "###",
+    "#D#",
+    "###"
+  ],
+  "key": {
+    "#": {
+      "tag": "create_construction_site:bulldozer_blades"
+    },
+    "D": {
+      "tag": "c:dyes/green"
+    }
+  },
+  "result": {
+    "count": 8,
+    "id": "create_construction_site:green_bulldozer_blade"
+  }
+}

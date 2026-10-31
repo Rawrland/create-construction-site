@@ -1,5 +1,9 @@
 package dev.rawrland.constructionsite.client;
 
+import dev.rawrland.constructionsite.content.tool.ToolPaint;
+import javax.annotation.Nullable;
+import net.minecraft.world.item.DyeColor;
+
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import dev.rawrland.constructionsite.content.bucket.BucketGroup;
@@ -79,7 +83,7 @@ public class ExcavatorBucketRenderer implements BlockEntityRenderer<ExcavatorBuc
         VertexConsumer buffer = bufferSource.getBuffer(RenderType.entityCutoutNoCull(InventoryMenu.BLOCK_ATLAS));
         ToolPainter painter = new ToolPainter(buffer, poseStack.last(), BucketGroup.axes(bucket.getBlockState()), packedLight);
 
-        drawBucket(painter, height, width, bucket.getMount());
+        drawBucket(painter, height, width, bucket.getMount(), ToolPaint.of(bucket.getBlockState().getBlock()));
         drawRopeRing(painter, bucket, height, width, ToolPainter.plain(ToolPainter.DARK_STEEL));
         drawContent(painter, bucket, height, width);
     }
@@ -89,9 +93,9 @@ public class ExcavatorBucketRenderer implements BlockEntityRenderer<ExcavatorBuc
      * buckets and for the bucket item (see {@link ToolItemRenderer}), so both
      * always look the same.
      */
-    static void drawBucket(ToolPainter painter, int height, int width, BucketMount mount) {
-        ToolPainter.Material painted = ToolPainter.framed(ToolPainter.PAINTED);
-        ToolPainter.Material teeth = ToolPainter.plain(ToolPainter.DARK_STEEL);
+    static void drawBucket(ToolPainter painter, int height, int width, BucketMount mount, @Nullable DyeColor colour) {
+        ToolPainter.Material painted = ToolPainter.body(colour);
+        ToolPainter.Material teeth = ToolPainter.plain(ToolPainter.edge(colour));
         ToolPainter.Material darkPlate = ToolPainter.framed(ToolPainter.DARK_STEEL);
         ToolPainter.Material pins = ToolPainter.plain(ToolPainter.DARK_STEEL);
         drawBody(painter, height, width * 16.0F, painted, teeth);
@@ -121,9 +125,13 @@ public class ExcavatorBucketRenderer implements BlockEntityRenderer<ExcavatorBuc
         float step2Z = STEP_2_Z * s, backY = BACK_START_Y * s;
         float backZ = BACK_Z * s;
 
-        // The front of the walls around the opening: one ring.
-        boolean[][] ring = {{true, true, true}, {true, false, true}, {true, true, true}};
-        p.panel(painted, 2, -1, open, new float[] {0, t, w - t, w}, new float[] {0, t, top - t, top}, ring);
+        // The front of the walls around the opening: one ring, all in the outline colour. It is too
+        // thin for a frame and a fill; drawn as a framed panel, its corners showed a few stray
+        // bright fill pixels (owner, 20 October 2026).
+        p.outline(painted, 2, -1, open, 0, w, 0, t);
+        p.outline(painted, 2, -1, open, 0, w, top - t, top);
+        p.outline(painted, 2, -1, open, 0, t, t, top - t);
+        p.outline(painted, 2, -1, open, w - t, w, t, top - t);
 
         // Outside: bottom, first step (back and underside), second step, back, roof.
         p.rect(painted, 1, -1, 0, 0, w, open, step1Z);

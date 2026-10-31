@@ -46,7 +46,8 @@ DATA_VERSION = 3955  # Minecraft 1.21.1
 MOD = "create_construction_site"
 
 # --- a minimal NBT writer --------------------------------------------------------------------
-# Values: Byte(n), Int(n), Long(n), Float(x), Double(x), str, dict (compound), List(type, items).
+# Values: Byte(n), Int(n), Long(n), Float(x), Double(x), str, dict (compound), List(type, items),
+# IntArray(ints) (for example a UUID, saved by Minecraft as four ints).
 # (Also used by tools/teststations/generate_test_stations.py.)
 
 
@@ -57,6 +58,9 @@ class Float(float): pass
 class Double(float): pass
 
 
+class IntArray(list): pass
+
+
 class List(list):
     def __init__(self, tag, items):
         super().__init__(items)
@@ -64,6 +68,7 @@ class List(list):
 
 
 TAG_BYTE, TAG_INT, TAG_LONG, TAG_FLOAT, TAG_DOUBLE, TAG_STRING, TAG_LIST, TAG_COMPOUND = 1, 3, 4, 5, 6, 8, 9, 10
+TAG_INT_ARRAY = 11
 
 
 def tag_of(value):
@@ -73,6 +78,7 @@ def tag_of(value):
     if isinstance(value, Float): return TAG_FLOAT
     if isinstance(value, Double): return TAG_DOUBLE
     if isinstance(value, str): return TAG_STRING
+    if isinstance(value, IntArray): return TAG_INT_ARRAY
     if isinstance(value, List): return TAG_LIST
     if isinstance(value, dict): return TAG_COMPOUND
     raise TypeError(f"no NBT type for {value!r}")
@@ -88,6 +94,8 @@ def payload(value):
     if t == TAG_STRING:
         data = value.encode("utf-8")
         return struct.pack(">H", len(data)) + data
+    if t == TAG_INT_ARRAY:
+        return struct.pack(">i", len(value)) + b"".join(struct.pack(">i", v) for v in value)
     if t == TAG_LIST:
         return struct.pack(">bi", value.tag if value else 0, len(value)) + b"".join(payload(v) for v in value)
     out = b""

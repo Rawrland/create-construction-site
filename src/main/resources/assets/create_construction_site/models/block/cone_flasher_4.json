@@ -1,0 +1,218 @@
+{
+  "parent": "minecraft:block/block",
+  "textures": {
+    "lens": "create_construction_site:block/cone_lamp_lens",
+    "housing": "create_construction_site:block/rubber",
+    "particle": "create_construction_site:block/rubber"
+  },
+  "elements": [
+    {
+      "from": [
+        7,
+        18,
+        7
+      ],
+      "to": [
+        9,
+        19,
+        9
+      ],
+      "faces": {
+        "north": {
+          "texture": "#housing",
+          "uv": [
+            9,
+            13,
+            7,
+            14
+          ]
+        },
+        "east": {
+          "texture": "#housing",
+          "uv": [
+            9,
+            13,
+            7,
+            14
+          ]
+        },
+        "south": {
+          "texture": "#housing",
+          "uv": [
+            7,
+            13,
+            9,
+            14
+          ]
+        },
+        "west": {
+          "texture": "#housing",
+          "uv": [
+            7,
+            13,
+            9,
+            14
+          ]
+        },
+        "up": {
+          "texture": "#housing",
+          "uv": [
+            7,
+            7,
+            9,
+            9
+          ]
+        },
+        "down": {
+          "texture": "#housing",
+          "uv": [
+            7,
+            7,
+            9,
+            9
+          ]
+        }
+      }
+    },
+    {
+      "from": [
+        5.5,
+        19,
+        7.25
+      ],
+      "to": [
+        10.5,
+        24,
+        8.75
+      ],
+      "faces": {
+        "north": {
+          "texture": "#housing",
+          "uv": [
+            10.5,
+            8,
+            5.5,
+            13
+          ]
+        },
+        "east": {
+          "texture": "#housing",
+          "uv": [
+            8.75,
+            8,
+            7.25,
+            13
+          ]
+        },
+        "south": {
+          "texture": "#housing",
+          "uv": [
+            5.5,
+            8,
+            10.5,
+            13
+          ]
+        },
+        "west": {
+          "texture": "#housing",
+          "uv": [
+            7.25,
+            8,
+            8.75,
+            13
+          ]
+        },
+        "up": {
+          "texture": "#housing",
+          "uv": [
+            5.5,
+            7.25,
+            10.5,
+            8.75
+          ]
+        },
+        "down": {
+          "texture": "#housing",
+          "uv": [
+            5.5,
+            7.25,
+            10.5,
+            8.75
+          ]
+        }
+      }
+    },
+    {
+      "from": [
+        6.5,
+        20,
+        6.75
+      ],
+      "to": [
+        9.5,
+        23,
+        9.25
+      ],
+      "faces": {
+        "north": {
+          "texture": "#lens",
+          "uv": [
+            9.5,
+            9,
+            6.5,
+            12
+          ]
+        },
+        "east": {
+          "texture": "#lens",
+          "uv": [
+            9.25,
+            9,
+            6.75,
+            12
+          ]
+        },
+        "south": {
+          "texture": "#lens",
+          "uv": [
+            6.5,
+            9,
+            9.5,
+            12
+          ]
+        },
+        "west": {
+          "texture": "#lens",
+          "uv": [
+            6.75,
+            9,
+            9.25,
+            12
+          ]
+        },
+        "up": {
+          "texture": "#lens",
+          "uv": [
+            6.5,
+            6.75,
+            9.5,
+            9.25
+          ]
+        },
+        "down": {
+          "texture": "#lens",
+          "uv": [
+            6.5,
+            6.75,
+            9.5,
+            9.25
+          ]
+        }
+      },
+      "neoforge_data": {
+        "block_light": 15,
+        "sky_light": 15
+      }
+    }
+  ]
+}

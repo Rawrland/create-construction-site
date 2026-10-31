@@ -1,0 +1,21 @@
+{
+  "replace": false,
+  "values": [
+    "create_construction_site:white_excavator_bucket",
+    "create_construction_site:light_gray_excavator_bucket",
+    "create_construction_site:gray_excavator_bucket",
+    "create_construction_site:black_excavator_bucket",
+    "create_construction_site:brown_excavator_bucket",
+    "create_construction_site:red_excavator_bucket",
+    "create_construction_site:orange_excavator_bucket",
+    "create_construction_site:yellow_excavator_bucket",
+    "create_construction_site:lime_excavator_bucket",
+    "create_construction_site:green_excavator_bucket",
+    "create_construction_site:cyan_excavator_bucket",
+    "create_construction_site:light_blue_excavator_bucket",
+    "create_construction_site:blue_excavator_bucket",
+    "create_construction_site:purple_excavator_bucket",
+    "create_construction_site:magenta_excavator_bucket",
+    "create_construction_site:pink_excavator_bucket"
+  ]
+}

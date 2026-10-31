@@ -1,0 +1,146 @@
+{
+  "parent": "minecraft:block/block",
+  "textures": {
+    "rubber": "create_construction_site:block/rubber",
+    "stripes": "create_construction_site:block/hazard_stripes_red_white",
+    "particle": "create_construction_site:block/hazard_stripes_red_white"
+  },
+  "elements": [
+    {
+      "from": [
+        3,
+        0,
+        5
+      ],
+      "to": [
+        13,
+        2,
+        11
+      ],
+      "faces": {
+        "north": {
+          "texture": "#rubber",
+          "uv": [
+            13,
+            14,
+            3,
+            16
+          ]
+        },
+        "east": {
+          "texture": "#rubber",
+          "uv": [
+            11,
+            14,
+            5,
+            16
+          ]
+        },
+        "south": {
+          "texture": "#rubber",
+          "uv": [
+            3,
+            14,
+            13,
+            16
+          ]
+        },
+        "west": {
+          "texture": "#rubber",
+          "uv": [
+            5,
+            14,
+            11,
+            16
+          ]
+        },
+        "up": {
+          "texture": "#rubber",
+          "uv": [
+            3,
+            5,
+            13,
+            11
+          ]
+        },
+        "down": {
+          "texture": "#rubber",
+          "uv": [
+            3,
+            5,
+            13,
+            11
+          ]
+        }
+      }
+    },
+    {
+      "from": [
+        5,
+        2,
+        7
+      ],
+      "to": [
+        11,
+        16,
+        9
+      ],
+      "faces": {
+        "north": {
+          "texture": "#stripes",
+          "uv": [
+            11,
+            0,
+            5,
+            14
+          ]
+        },
+        "east": {
+          "texture": "#stripes",
+          "uv": [
+            10,
+            0,
+            11,
+            14
+          ]
+        },
+        "south": {
+          "texture": "#stripes",
+          "uv": [
+            5,
+            0,
+            11,
+            14
+          ]
+        },
+        "west": {
+          "texture": "#stripes",
+          "uv": [
+            5,
+            0,
+            6,
+            14
+          ]
+        },
+        "up": {
+          "texture": "#stripes",
+          "uv": [
+            5,
+            0,
+            11,
+            1
+          ]
+        },
+        "down": {
+          "texture": "#stripes",
+          "uv": [
+            5,
+            13,
+            11,
+            14
+          ]
+        }
+      }
+    }
+  ]
+}

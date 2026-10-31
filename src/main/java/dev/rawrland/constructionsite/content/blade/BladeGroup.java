@@ -246,6 +246,25 @@ public final class BladeGroup {
         return true;
     }
 
+    /**
+     * The block positions of one slice of a blade: the whole column, top to bottom, at the
+     * same place along the cutting edge as the block at {@code self}. A single blade is its own slice.
+     */
+    public static List<BlockPos> slice(BlockPos self, BlockState state, BlockPos anchorOffset, int height) {
+        List<BlockPos> result = new ArrayList<>(height);
+        if (!state.getValue(BulldozerBladeBlock.JOINED)) {
+            result.add(self);
+            return result;
+        }
+        BucketGroup.Axes axes = axes(state);
+        BlockPos anchor = self.offset(anchorOffset);
+        int column = BucketGroup.along(self.subtract(anchor), axes.right());
+        for (int u = 0; u < height; u++) {
+            result.add(anchor.relative(axes.right(), column).relative(axes.up(), u));
+        }
+        return result;
+    }
+
     /** All block positions of the blade that the block at {@code self} belongs to: column by column, bottom first. */
     public static List<BlockPos> members(BlockPos self, BlockState state, BlockPos anchorOffset, int height, int width) {
         List<BlockPos> result = new ArrayList<>(height * width);

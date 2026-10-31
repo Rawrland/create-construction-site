@@ -1,0 +1,13 @@
+{
+  "type": "create:splashing",
+  "ingredients": [
+    {
+      "tag": "create_construction_site:painted_corrugated_sheets"
+    }
+  ],
+  "results": [
+    {
+      "id": "create_construction_site:corrugated_sheet"
+    }
+  ]
+}

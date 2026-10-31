@@ -13,6 +13,7 @@ out/
 !**/src/**/out/
 
 .run/
+run-server/
 
 ### Eclipse ###
 .apt_generated
@@ -38,6 +39,9 @@ run/
 **/src/generated/**/.cache/
 repo/
 !**/src/**/repo/
+
+### Airship schematics (not part of 0.1 yet) ###
+tools/schematics/
 
 ### Reference source (read-only copies of other mods, see docs/notes/README.md) ###
 reference/

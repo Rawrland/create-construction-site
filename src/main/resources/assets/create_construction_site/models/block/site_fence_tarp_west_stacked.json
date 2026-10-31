@@ -1,0 +1,83 @@
+{
+  "parent": "minecraft:block/block",
+  "textures": {
+    "tarp": "minecraft:block/white_wool",
+    "particle": "minecraft:block/white_wool"
+  },
+  "elements": [
+    {
+      "from": [
+        0,
+        2,
+        8.5
+      ],
+      "to": [
+        8,
+        16,
+        8.75
+      ],
+      "faces": {
+        "north": {
+          "texture": "#tarp",
+          "uv": [
+            8,
+            0,
+            0,
+            14
+          ],
+          "tintindex": 0
+        },
+        "east": {
+          "texture": "#tarp",
+          "uv": [
+            8.75,
+            0,
+            8.5,
+            14
+          ],
+          "tintindex": 0
+        },
+        "south": {
+          "texture": "#tarp",
+          "uv": [
+            0,
+            0,
+            8,
+            14
+          ],
+          "tintindex": 0
+        },
+        "west": {
+          "texture": "#tarp",
+          "uv": [
+            8.5,
+            0,
+            8.75,
+            14
+          ],
+          "tintindex": 0
+        },
+        "up": {
+          "texture": "#tarp",
+          "uv": [
+            0,
+            8.5,
+            8,
+            8.75
+          ],
+          "tintindex": 0
+        },
+        "down": {
+          "texture": "#tarp",
+          "uv": [
+            0,
+            8.5,
+            8,
+            8.75
+          ],
+          "tintindex": 0
+        }
+      }
+    }
+  ]
+}

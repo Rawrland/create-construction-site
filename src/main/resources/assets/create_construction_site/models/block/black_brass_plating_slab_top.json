@@ -1,0 +1,8 @@
+{
+  "parent": "minecraft:block/slab_top",
+  "textures": {
+    "bottom": "create_construction_site:block/painted_steel_black",
+    "top": "create_construction_site:block/painted_steel_black",
+    "side": "create_construction_site:block/painted_steel_black"
+  }
+}

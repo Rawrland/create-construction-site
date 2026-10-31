@@ -1,0 +1,80 @@
+{
+  "parent": "minecraft:block/block",
+  "textures": {
+    "mesh": "create_construction_site:block/site_fence_mesh",
+    "steel": "create_construction_site:block/site_fence_steel",
+    "foot": "create_construction_site:block/site_fence_foot",
+    "clamp": "create_construction_site:block/rubber",
+    "particle": "create_construction_site:block/site_fence_steel"
+  },
+  "elements": [
+    {
+      "from": [
+        6.5,
+        10,
+        6.5
+      ],
+      "to": [
+        9.5,
+        12,
+        9.5
+      ],
+      "faces": {
+        "north": {
+          "texture": "#clamp",
+          "uv": [
+            9.5,
+            4,
+            6.5,
+            6
+          ]
+        },
+        "east": {
+          "texture": "#clamp",
+          "uv": [
+            9.5,
+            4,
+            6.5,
+            6
+          ]
+        },
+        "south": {
+          "texture": "#clamp",
+          "uv": [
+            6.5,
+            4,
+            9.5,
+            6
+          ]
+        },
+        "west": {
+          "texture": "#clamp",
+          "uv": [
+            6.5,
+            4,
+            9.5,
+            6
+          ]
+        },
+        "up": {
+          "texture": "#clamp",
+          "uv": [
+            6.5,
+            6.5,
+            9.5,
+            9.5
+          ]
+        },
+        "down": {
+          "texture": "#clamp",
+          "uv": [
+            6.5,
+            6.5,
+            9.5,
+            9.5
+          ]
+        }
+      }
+    }
+  ]
+}

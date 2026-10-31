@@ -1,0 +1,16 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "building",
+  "ingredients": [
+    {
+      "item": "create_construction_site:white_brass_plating"
+    },
+    {
+      "tag": "c:dyes/red"
+    }
+  ],
+  "result": {
+    "count": 1,
+    "id": "create_construction_site:hazard_stripes_red_white"
+  }
+}

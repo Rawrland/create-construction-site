@@ -1,0 +1,412 @@
+{
+  "multipart": [
+    {
+      "when": {
+        "cones": "1",
+        "top": "true"
+      },
+      "apply": {
+        "model": "create_construction_site:block/traffic_cone_1"
+      }
+    },
+    {
+      "when": {
+        "cones": "1",
+        "top": "false"
+      },
+      "apply": {
+        "model": "create_construction_site:block/traffic_cone_1_full"
+      }
+    },
+    {
+      "when": {
+        "cones": "1",
+        "top": "true",
+        "lamp": "flasher",
+        "lamp_axis": "z"
+      },
+      "apply": {
+        "model": "create_construction_site:block/cone_flasher_1"
+      }
+    },
+    {
+      "when": {
+        "cones": "1",
+        "top": "true",
+        "lamp": "flasher",
+        "lamp_axis": "x"
+      },
+      "apply": {
+        "model": "create_construction_site:block/cone_flasher_1",
+        "y": 90
+      }
+    },
+    {
+      "when": {
+        "cones": "1",
+        "top": "true",
+        "lamp": "beacon"
+      },
+      "apply": {
+        "model": "create_construction_site:block/cone_beacon_1"
+      }
+    },
+    {
+      "when": {
+        "cones": "2",
+        "top": "true"
+      },
+      "apply": {
+        "model": "create_construction_site:block/traffic_cone_2"
+      }
+    },
+    {
+      "when": {
+        "cones": "2",
+        "top": "false"
+      },
+      "apply": {
+        "model": "create_construction_site:block/traffic_cone_2_full"
+      }
+    },
+    {
+      "when": {
+        "cones": "2",
+        "top": "true",
+        "lamp": "flasher",
+        "lamp_axis": "z"
+      },
+      "apply": {
+        "model": "create_construction_site:block/cone_flasher_2"
+      }
+    },
+    {
+      "when": {
+        "cones": "2",
+        "top": "true",
+        "lamp": "flasher",
+        "lamp_axis": "x"
+      },
+      "apply": {
+        "model": "create_construction_site:block/cone_flasher_2",
+        "y": 90
+      }
+    },
+    {
+      "when": {
+        "cones": "2",
+        "top": "true",
+        "lamp": "beacon"
+      },
+      "apply": {
+        "model": "create_construction_site:block/cone_beacon_2"
+      }
+    },
+    {
+      "when": {
+        "cones": "3",
+        "top": "true"
+      },
+      "apply": {
+        "model": "create_construction_site:block/traffic_cone_3"
+      }
+    },
+    {
+      "when": {
+        "cones": "3",
+        "top": "false"
+      },
+      "apply": {
+        "model": "create_construction_site:block/traffic_cone_3_full"
+      }
+    },
+    {
+      "when": {
+        "cones": "3",
+        "top": "true",
+        "lamp": "flasher",
+        "lamp_axis": "z"
+      },
+      "apply": {
+        "model": "create_construction_site:block/cone_flasher_3"
+      }
+    },
+    {
+      "when": {
+        "cones": "3",
+        "top": "true",
+        "lamp": "flasher",
+        "lamp_axis": "x"
+      },
+      "apply": {
+        "model": "create_construction_site:block/cone_flasher_3",
+        "y": 90
+      }
+    },
+    {
+      "when": {
+        "cones": "3",
+        "top": "true",
+        "lamp": "beacon"
+      },
+      "apply": {
+        "model": "create_construction_site:block/cone_beacon_3"
+      }
+    },
+    {
+      "when": {
+        "cones": "4",
+        "top": "true"
+      },
+      "apply": {
+        "model": "create_construction_site:block/traffic_cone_4"
+      }
+    },
+    {
+      "when": {
+        "cones": "4",
+        "top": "false"
+      },
+      "apply": {
+        "model": "create_construction_site:block/traffic_cone_4_full"
+      }
+    },
+    {
+      "when": {
+        "cones": "4",
+        "top": "true",
+        "lamp": "flasher",
+        "lamp_axis": "z"
+      },
+      "apply": {
+        "model": "create_construction_site:block/cone_flasher_4"
+      }
+    },
+    {
+      "when": {
+        "cones": "4",
+        "top": "true",
+        "lamp": "flasher",
+        "lamp_axis": "x"
+      },
+      "apply": {
+        "model": "create_construction_site:block/cone_flasher_4",
+        "y": 90
+      }
+    },
+    {
+      "when": {
+        "cones": "4",
+        "top": "true",
+        "lamp": "beacon"
+      },
+      "apply": {
+        "model": "create_construction_site:block/cone_beacon_4"
+      }
+    },
+    {
+      "when": {
+        "cones": "5",
+        "top": "true"
+      },
+      "apply": {
+        "model": "create_construction_site:block/traffic_cone_5"
+      }
+    },
+    {
+      "when": {
+        "cones": "5",
+        "top": "false"
+      },
+      "apply": {
+        "model": "create_construction_site:block/traffic_cone_5_full"
+      }
+    },
+    {
+      "when": {
+        "cones": "5",
+        "top": "true",
+        "lamp": "flasher",
+        "lamp_axis": "z"
+      },
+      "apply": {
+        "model": "create_construction_site:block/cone_flasher_5"
+      }
+    },
+    {
+      "when": {
+        "cones": "5",
+        "top": "true",
+        "lamp": "flasher",
+        "lamp_axis": "x"
+      },
+      "apply": {
+        "model": "create_construction_site:block/cone_flasher_5",
+        "y": 90
+      }
+    },
+    {
+      "when": {
+        "cones": "5",
+        "top": "true",
+        "lamp": "beacon"
+      },
+      "apply": {
+        "model": "create_construction_site:block/cone_beacon_5"
+      }
+    },
+    {
+      "when": {
+        "cones": "6",
+        "top": "true"
+      },
+      "apply": {
+        "model": "create_construction_site:block/traffic_cone_6"
+      }
+    },
+    {
+      "when": {
+        "cones": "6",
+        "top": "false"
+      },
+      "apply": {
+        "model": "create_construction_site:block/traffic_cone_6_full"
+      }
+    },
+    {
+      "when": {
+        "cones": "6",
+        "top": "true",
+        "lamp": "flasher",
+        "lamp_axis": "z"
+      },
+      "apply": {
+        "model": "create_construction_site:block/cone_flasher_6"
+      }
+    },
+    {
+      "when": {
+        "cones": "6",
+        "top": "true",
+        "lamp": "flasher",
+        "lamp_axis": "x"
+      },
+      "apply": {
+        "model": "create_construction_site:block/cone_flasher_6",
+        "y": 90
+      }
+    },
+    {
+      "when": {
+        "cones": "6",
+        "top": "true",
+        "lamp": "beacon"
+      },
+      "apply": {
+        "model": "create_construction_site:block/cone_beacon_6"
+      }
+    },
+    {
+      "when": {
+        "cones": "7",
+        "top": "true"
+      },
+      "apply": {
+        "model": "create_construction_site:block/traffic_cone_7"
+      }
+    },
+    {
+      "when": {
+        "cones": "7",
+        "top": "false"
+      },
+      "apply": {
+        "model": "create_construction_site:block/traffic_cone_7_full"
+      }
+    },
+    {
+      "when": {
+        "cones": "7",
+        "top": "true",
+        "lamp": "flasher",
+        "lamp_axis": "z"
+      },
+      "apply": {
+        "model": "create_construction_site:block/cone_flasher_7"
+      }
+    },
+    {
+      "when": {
+        "cones": "7",
+        "top": "true",
+        "lamp": "flasher",
+        "lamp_axis": "x"
+      },
+      "apply": {
+        "model": "create_construction_site:block/cone_flasher_7",
+        "y": 90
+      }
+    },
+    {
+      "when": {
+        "cones": "7",
+        "top": "true",
+        "lamp": "beacon"
+      },
+      "apply": {
+        "model": "create_construction_site:block/cone_beacon_7"
+      }
+    },
+    {
+      "when": {
+        "cones": "8",
+        "top": "true"
+      },
+      "apply": {
+        "model": "create_construction_site:block/traffic_cone_8"
+      }
+    },
+    {
+      "when": {
+        "cones": "8",
+        "top": "false"
+      },
+      "apply": {
+        "model": "create_construction_site:block/traffic_cone_8_full"
+      }
+    },
+    {
+      "when": {
+        "cones": "8",
+        "top": "true",
+        "lamp": "flasher",
+        "lamp_axis": "z"
+      },
+      "apply": {
+        "model": "create_construction_site:block/cone_flasher_8"
+      }
+    },
+    {
+      "when": {
+        "cones": "8",
+        "top": "true",
+        "lamp": "flasher",
+        "lamp_axis": "x"
+      },
+      "apply": {
+        "model": "create_construction_site:block/cone_flasher_8",
+        "y": 90
+      }
+    },
+    {
+      "when": {
+        "cones": "8",
+        "top": "true",
+        "lamp": "beacon"
+      },
+      "apply": {
+        "model": "create_construction_site:block/cone_beacon_8"
+      }
+    }
+  ]
+}

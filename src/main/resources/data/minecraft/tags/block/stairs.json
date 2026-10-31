@@ -1,0 +1,25 @@
+{
+  "replace": false,
+  "values": [
+    "create_construction_site:tread_plate_stairs",
+    "create_construction_site:brass_plating_stairs",
+    "create_construction_site:white_brass_plating_stairs",
+    "create_construction_site:light_gray_brass_plating_stairs",
+    "create_construction_site:gray_brass_plating_stairs",
+    "create_construction_site:black_brass_plating_stairs",
+    "create_construction_site:brown_brass_plating_stairs",
+    "create_construction_site:red_brass_plating_stairs",
+    "create_construction_site:orange_brass_plating_stairs",
+    "create_construction_site:yellow_brass_plating_stairs",
+    "create_construction_site:lime_brass_plating_stairs",
+    "create_construction_site:green_brass_plating_stairs",
+    "create_construction_site:cyan_brass_plating_stairs",
+    "create_construction_site:light_blue_brass_plating_stairs",
+    "create_construction_site:blue_brass_plating_stairs",
+    "create_construction_site:purple_brass_plating_stairs",
+    "create_construction_site:magenta_brass_plating_stairs",
+    "create_construction_site:pink_brass_plating_stairs",
+    "create_construction_site:dark_steel_plating_stairs",
+    "create_construction_site:polished_iron_plating_stairs"
+  ]
+}

@@ -1,0 +1,17 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "building",
+  "pattern": [
+    "##",
+    "##"
+  ],
+  "key": {
+    "#": {
+      "tag": "c:plates/brass"
+    }
+  },
+  "result": {
+    "count": 4,
+    "id": "create_construction_site:brass_plating"
+  }
+}

@@ -921,13 +921,30 @@ public class BulldozerBladeBlockEntity extends SmartBlockEntity
 
     // --------------------------------------------------------------- breaking
 
+    /** The blocks of the slice (the column) this block belongs to. */
+    public List<BlockPos> getSlicePositions() {
+        return BladeGroup.slice(getBlockPos(), getBlockState(), getAnchorOffsetForSlice(), groupHeight);
+    }
+
+    private BlockPos getAnchorOffsetForSlice() {
+        return isJoined() ? anchorOffset : BlockPos.ZERO;
+    }
+
     /** Empties this block and drops what its part of the pile would drop if broken in the world with an unenchanted shovel tool. */
     public void dropContentAsBroken(ServerLevel serverLevel) {
+        BlockPos pos = getBlockPos();
+        for (ItemStack stack : removeContentAsBroken(serverLevel)) {
+            Containers.dropItemStack(serverLevel, pos.getX(), pos.getY(), pos.getZ(), stack);
+        }
+    }
+
+    /** Empties this block and returns what its part of the pile would drop if broken with an unenchanted shovel tool. */
+    public List<ItemStack> removeContentAsBroken(ServerLevel serverLevel) {
+        List<ItemStack> drops = new ArrayList<>();
         if (stored.isEmpty()) {
-            return;
+            return drops;
         }
         BlockPos pos = getBlockPos();
-        List<ItemStack> drops = new ArrayList<>();
         for (Stored block : stored) {
             BlockEntity storedBlockEntity = block.blockEntityData() == null ? null
                 : BlockEntity.loadStatic(pos, block.state(), block.blockEntityData(), serverLevel.registryAccess());
@@ -947,9 +964,7 @@ public class BulldozerBladeBlockEntity extends SmartBlockEntity
         }
         stored.clear();
         setChanged();
-        for (ItemStack stack : drops) {
-            Containers.dropItemStack(serverLevel, pos.getX(), pos.getY(), pos.getZ(), stack);
-        }
+        return drops;
     }
 
     // ------------------------------------------------- saving and sending

@@ -1,0 +1,6 @@
+{
+  "parent": "create:block/controls/block_open",
+  "textures": {
+    "particle": "create:block/controls_frame"
+  }
+}

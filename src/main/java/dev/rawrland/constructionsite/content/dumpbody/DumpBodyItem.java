@@ -83,7 +83,10 @@ public class DumpBodyItem extends BlockItem {
             return null;
         }
         Level level = context.getLevel();
-        if (!(level.getBlockEntity(against) instanceof DumpBodyBlockEntity cell) || !cell.isJoined()) {
+        if (!(level.getBlockEntity(against) instanceof DumpBodyBlockEntity cell) || !cell.isJoined()
+            // Only the same colour joins, so a layer of another colour would not become part of it.
+            || !(context.getItemInHand().getItem() instanceof net.minecraft.world.item.BlockItem item)
+            || level.getBlockState(against).getBlock() != item.getBlock()) {
             return null;
         }
         Direction face = context.getClickedFace();

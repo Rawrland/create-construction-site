@@ -1,0 +1,79 @@
+{
+  "parent": "minecraft:block/block",
+  "textures": {
+    "board": "create_construction_site:block/barrier_board",
+    "pole": "create_construction_site:block/traffic_cone_white",
+    "rubber": "create_construction_site:block/rubber",
+    "particle": "create_construction_site:block/barrier_board"
+  },
+  "elements": [
+    {
+      "from": [
+        0,
+        9,
+        7
+      ],
+      "to": [
+        16,
+        14,
+        9
+      ],
+      "faces": {
+        "north": {
+          "texture": "#board",
+          "uv": [
+            16,
+            2,
+            0,
+            7
+          ]
+        },
+        "east": {
+          "texture": "#board",
+          "uv": [
+            15,
+            2,
+            16,
+            7
+          ]
+        },
+        "south": {
+          "texture": "#board",
+          "uv": [
+            0,
+            2,
+            16,
+            7
+          ]
+        },
+        "west": {
+          "texture": "#board",
+          "uv": [
+            0,
+            2,
+            1,
+            7
+          ]
+        },
+        "up": {
+          "texture": "#board",
+          "uv": [
+            0,
+            2,
+            16,
+            3
+          ]
+        },
+        "down": {
+          "texture": "#board",
+          "uv": [
+            0,
+            6,
+            16,
+            7
+          ]
+        }
+      }
+    }
+  ]
+}

@@ -1,0 +1,10 @@
+{
+  "type": "minecraft:stonecutting",
+  "ingredient": {
+    "item": "create_construction_site:gray_brass_plating"
+  },
+  "result": {
+    "count": 1,
+    "id": "create_construction_site:gray_brass_plating_stairs"
+  }
+}

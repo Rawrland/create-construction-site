@@ -1,0 +1,16 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "building",
+  "pattern": [
+    "###"
+  ],
+  "key": {
+    "#": {
+      "item": "create_construction_site:brass_plating"
+    }
+  },
+  "result": {
+    "count": 6,
+    "id": "create_construction_site:brass_plating_slab"
+  }
+}

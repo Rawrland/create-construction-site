@@ -1,0 +1,1264 @@
+{
+  "multipart": [
+    {
+      "when": {
+        "facing": "up",
+        "flipped": "false"
+      },
+      "apply": {
+        "model": "create_construction_site:block/hazard_plate_red_white_middle"
+      }
+    },
+    {
+      "when": {
+        "facing": "up",
+        "flipped": "false",
+        "north": "true"
+      },
+      "apply": {
+        "model": "create_construction_site:block/hazard_plate_red_white_north"
+      }
+    },
+    {
+      "when": {
+        "facing": "up",
+        "flipped": "false",
+        "south": "true"
+      },
+      "apply": {
+        "model": "create_construction_site:block/hazard_plate_red_white_south"
+      }
+    },
+    {
+      "when": {
+        "facing": "up",
+        "flipped": "false",
+        "west": "true"
+      },
+      "apply": {
+        "model": "create_construction_site:block/hazard_plate_red_white_west"
+      }
+    },
+    {
+      "when": {
+        "facing": "up",
+        "flipped": "false",
+        "east": "true"
+      },
+      "apply": {
+        "model": "create_construction_site:block/hazard_plate_red_white_east"
+      }
+    },
+    {
+      "when": {
+        "facing": "up",
+        "flipped": "false",
+        "north": "true",
+        "west": "true"
+      },
+      "apply": {
+        "model": "create_construction_site:block/hazard_plate_red_white_north_west"
+      }
+    },
+    {
+      "when": {
+        "facing": "up",
+        "flipped": "false",
+        "north": "true",
+        "east": "true"
+      },
+      "apply": {
+        "model": "create_construction_site:block/hazard_plate_red_white_north_east"
+      }
+    },
+    {
+      "when": {
+        "facing": "up",
+        "flipped": "false",
+        "south": "true",
+        "west": "true"
+      },
+      "apply": {
+        "model": "create_construction_site:block/hazard_plate_red_white_south_west"
+      }
+    },
+    {
+      "when": {
+        "facing": "up",
+        "flipped": "false",
+        "south": "true",
+        "east": "true"
+      },
+      "apply": {
+        "model": "create_construction_site:block/hazard_plate_red_white_south_east"
+      }
+    },
+    {
+      "when": {
+        "facing": "up",
+        "flipped": "true"
+      },
+      "apply": {
+        "model": "create_construction_site:block/hazard_plate_red_white_flipped_middle"
+      }
+    },
+    {
+      "when": {
+        "facing": "up",
+        "flipped": "true",
+        "north": "true"
+      },
+      "apply": {
+        "model": "create_construction_site:block/hazard_plate_red_white_flipped_north"
+      }
+    },
+    {
+      "when": {
+        "facing": "up",
+        "flipped": "true",
+        "south": "true"
+      },
+      "apply": {
+        "model": "create_construction_site:block/hazard_plate_red_white_flipped_south"
+      }
+    },
+    {
+      "when": {
+        "facing": "up",
+        "flipped": "true",
+        "west": "true"
+      },
+      "apply": {
+        "model": "create_construction_site:block/hazard_plate_red_white_flipped_west"
+      }
+    },
+    {
+      "when": {
+        "facing": "up",
+        "flipped": "true",
+        "east": "true"
+      },
+      "apply": {
+        "model": "create_construction_site:block/hazard_plate_red_white_flipped_east"
+      }
+    },
+    {
+      "when": {
+        "facing": "up",
+        "flipped": "true",
+        "north": "true",
+        "west": "true"
+      },
+      "apply": {
+        "model": "create_construction_site:block/hazard_plate_red_white_flipped_north_west"
+      }
+    },
+    {
+      "when": {
+        "facing": "up",
+        "flipped": "true",
+        "north": "true",
+        "east": "true"
+      },
+      "apply": {
+        "model": "create_construction_site:block/hazard_plate_red_white_flipped_north_east"
+      }
+    },
+    {
+      "when": {
+        "facing": "up",
+        "flipped": "true",
+        "south": "true",
+        "west": "true"
+      },
+      "apply": {
+        "model": "create_construction_site:block/hazard_plate_red_white_flipped_south_west"
+      }
+    },
+    {
+      "when": {
+        "facing": "up",
+        "flipped": "true",
+        "south": "true",
+        "east": "true"
+      },
+      "apply": {
+        "model": "create_construction_site:block/hazard_plate_red_white_flipped_south_east"
+      }
+    },
+    {
+      "when": {
+        "facing": "down",
+        "flipped": "false"
+      },
+      "apply": {
+        "model": "create_construction_site:block/hazard_plate_red_white_middle",
+        "x": 180
+      }
+    },
+    {
+      "when": {
+        "facing": "down",
+        "flipped": "false",
+        "north": "true"
+      },
+      "apply": {
+        "model": "create_construction_site:block/hazard_plate_red_white_north",
+        "x": 180
+      }
+    },
+    {
+      "when": {
+        "facing": "down",
+        "flipped": "false",
+        "south": "true"
+      },
+      "apply": {
+        "model": "create_construction_site:block/hazard_plate_red_white_south",
+        "x": 180
+      }
+    },
+    {
+      "when": {
+        "facing": "down",
+        "flipped": "false",
+        "west": "true"
+      },
+      "apply": {
+        "model": "create_construction_site:block/hazard_plate_red_white_west",
+        "x": 180
+      }
+    },
+    {
+      "when": {
+        "facing": "down",
+        "flipped": "false",
+        "east": "true"
+      },
+      "apply": {
+        "model": "create_construction_site:block/hazard_plate_red_white_east",
+        "x": 180
+      }
+    },
+    {
+      "when": {
+        "facing": "down",
+        "flipped": "false",
+        "north": "true",
+        "west": "true"
+      },
+      "apply": {
+        "model": "create_construction_site:block/hazard_plate_red_white_north_west",
+        "x": 180
+      }
+    },
+    {
+      "when": {
+        "facing": "down",
+        "flipped": "false",
+        "north": "true",
+        "east": "true"
+      },
+      "apply": {
+        "model": "create_construction_site:block/hazard_plate_red_white_north_east",
+        "x": 180
+      }
+    },
+    {
+      "when": {
+        "facing": "down",
+        "flipped": "false",
+        "south": "true",
+        "west": "true"
+      },
+      "apply": {
+        "model": "create_construction_site:block/hazard_plate_red_white_south_west",
+        "x": 180
+      }
+    },
+    {
+      "when": {
+        "facing": "down",
+        "flipped": "false",
+        "south": "true",
+        "east": "true"
+      },
+      "apply": {
+        "model": "create_construction_site:block/hazard_plate_red_white_south_east",
+        "x": 180
+      }
+    },
+    {
+      "when": {
+        "facing": "down",
+        "flipped": "true"
+      },
+      "apply": {
+        "model": "create_construction_site:block/hazard_plate_red_white_flipped_middle",
+        "x": 180
+      }
+    },
+    {
+      "when": {
+        "facing": "down",
+        "flipped": "true",
+        "north": "true"
+      },
+      "apply": {
+        "model": "create_construction_site:block/hazard_plate_red_white_flipped_north",
+        "x": 180
+      }
+    },
+    {
+      "when": {
+        "facing": "down",
+        "flipped": "true",
+        "south": "true"
+      },
+      "apply": {
+        "model": "create_construction_site:block/hazard_plate_red_white_flipped_south",
+        "x": 180
+      }
+    },
+    {
+      "when": {
+        "facing": "down",
+        "flipped": "true",
+        "west": "true"
+      },
+      "apply": {
+        "model": "create_construction_site:block/hazard_plate_red_white_flipped_west",
+        "x": 180
+      }
+    },
+    {
+      "when": {
+        "facing": "down",
+        "flipped": "true",
+        "east": "true"
+      },
+      "apply": {
+        "model": "create_construction_site:block/hazard_plate_red_white_flipped_east",
+        "x": 180
+      }
+    },
+    {
+      "when": {
+        "facing": "down",
+        "flipped": "true",
+        "north": "true",
+        "west": "true"
+      },
+      "apply": {
+        "model": "create_construction_site:block/hazard_plate_red_white_flipped_north_west",
+        "x": 180
+      }
+    },
+    {
+      "when": {
+        "facing": "down",
+        "flipped": "true",
+        "north": "true",
+        "east": "true"
+      },
+      "apply": {
+        "model": "create_construction_site:block/hazard_plate_red_white_flipped_north_east",
+        "x": 180
+      }
+    },
+    {
+      "when": {
+        "facing": "down",
+        "flipped": "true",
+        "south": "true",
+        "west": "true"
+      },
+      "apply": {
+        "model": "create_construction_site:block/hazard_plate_red_white_flipped_south_west",
+        "x": 180
+      }
+    },
+    {
+      "when": {
+        "facing": "down",
+        "flipped": "true",
+        "south": "true",
+        "east": "true"
+      },
+      "apply": {
+        "model": "create_construction_site:block/hazard_plate_red_white_flipped_south_east",
+        "x": 180
+      }
+    },
+    {
+      "when": {
+        "facing": "north",
+        "flipped": "false"
+      },
+      "apply": {
+        "model": "create_construction_site:block/hazard_plate_red_white_middle",
+        "x": 90
+      }
+    },
+    {
+      "when": {
+        "facing": "north",
+        "flipped": "false",
+        "north": "true"
+      },
+      "apply": {
+        "model": "create_construction_site:block/hazard_plate_red_white_north",
+        "x": 90
+      }
+    },
+    {
+      "when": {
+        "facing": "north",
+        "flipped": "false",
+        "south": "true"
+      },
+      "apply": {
+        "model": "create_construction_site:block/hazard_plate_red_white_south",
+        "x": 90
+      }
+    },
+    {
+      "when": {
+        "facing": "north",
+        "flipped": "false",
+        "west": "true"
+      },
+      "apply": {
+        "model": "create_construction_site:block/hazard_plate_red_white_west",
+        "x": 90
+      }
+    },
+    {
+      "when": {
+        "facing": "north",
+        "flipped": "false",
+        "east": "true"
+      },
+      "apply": {
+        "model": "create_construction_site:block/hazard_plate_red_white_east",
+        "x": 90
+      }
+    },
+    {
+      "when": {
+        "facing": "north",
+        "flipped": "false",
+        "north": "true",
+        "west": "true"
+      },
+      "apply": {
+        "model": "create_construction_site:block/hazard_plate_red_white_north_west",
+        "x": 90
+      }
+    },
+    {
+      "when": {
+        "facing": "north",
+        "flipped": "false",
+        "north": "true",
+        "east": "true"
+      },
+      "apply": {
+        "model": "create_construction_site:block/hazard_plate_red_white_north_east",
+        "x": 90
+      }
+    },
+    {
+      "when": {
+        "facing": "north",
+        "flipped": "false",
+        "south": "true",
+        "west": "true"
+      },
+      "apply": {
+        "model": "create_construction_site:block/hazard_plate_red_white_south_west",
+        "x": 90
+      }
+    },
+    {
+      "when": {
+        "facing": "north",
+        "flipped": "false",
+        "south": "true",
+        "east": "true"
+      },
+      "apply": {
+        "model": "create_construction_site:block/hazard_plate_red_white_south_east",
+        "x": 90
+      }
+    },
+    {
+      "when": {
+        "facing": "north",
+        "flipped": "true"
+      },
+      "apply": {
+        "model": "create_construction_site:block/hazard_plate_red_white_flipped_middle",
+        "x": 90
+      }
+    },
+    {
+      "when": {
+        "facing": "north",
+        "flipped": "true",
+        "north": "true"
+      },
+      "apply": {
+        "model": "create_construction_site:block/hazard_plate_red_white_flipped_north",
+        "x": 90
+      }
+    },
+    {
+      "when": {
+        "facing": "north",
+        "flipped": "true",
+        "south": "true"
+      },
+      "apply": {
+        "model": "create_construction_site:block/hazard_plate_red_white_flipped_south",
+        "x": 90
+      }
+    },
+    {
+      "when": {
+        "facing": "north",
+        "flipped": "true",
+        "west": "true"
+      },
+      "apply": {
+        "model": "create_construction_site:block/hazard_plate_red_white_flipped_west",
+        "x": 90
+      }
+    },
+    {
+      "when": {
+        "facing": "north",
+        "flipped": "true",
+        "east": "true"
+      },
+      "apply": {
+        "model": "create_construction_site:block/hazard_plate_red_white_flipped_east",
+        "x": 90
+      }
+    },
+    {
+      "when": {
+        "facing": "north",
+        "flipped": "true",
+        "north": "true",
+        "west": "true"
+      },
+      "apply": {
+        "model": "create_construction_site:block/hazard_plate_red_white_flipped_north_west",
+        "x": 90
+      }
+    },
+    {
+      "when": {
+        "facing": "north",
+        "flipped": "true",
+        "north": "true",
+        "east": "true"
+      },
+      "apply": {
+        "model": "create_construction_site:block/hazard_plate_red_white_flipped_north_east",
+        "x": 90
+      }
+    },
+    {
+      "when": {
+        "facing": "north",
+        "flipped": "true",
+        "south": "true",
+        "west": "true"
+      },
+      "apply": {
+        "model": "create_construction_site:block/hazard_plate_red_white_flipped_south_west",
+        "x": 90
+      }
+    },
+    {
+      "when": {
+        "facing": "north",
+        "flipped": "true",
+        "south": "true",
+        "east": "true"
+      },
+      "apply": {
+        "model": "create_construction_site:block/hazard_plate_red_white_flipped_south_east",
+        "x": 90
+      }
+    },
+    {
+      "when": {
+        "facing": "east",
+        "flipped": "false"
+      },
+      "apply": {
+        "model": "create_construction_site:block/hazard_plate_red_white_middle",
+        "x": 90,
+        "y": 90
+      }
+    },
+    {
+      "when": {
+        "facing": "east",
+        "flipped": "false",
+        "north": "true"
+      },
+      "apply": {
+        "model": "create_construction_site:block/hazard_plate_red_white_north",
+        "x": 90,
+        "y": 90
+      }
+    },
+    {
+      "when": {
+        "facing": "east",
+        "flipped": "false",
+        "south": "true"
+      },
+      "apply": {
+        "model": "create_construction_site:block/hazard_plate_red_white_south",
+        "x": 90,
+        "y": 90
+      }
+    },
+    {
+      "when": {
+        "facing": "east",
+        "flipped": "false",
+        "west": "true"
+      },
+      "apply": {
+        "model": "create_construction_site:block/hazard_plate_red_white_west",
+        "x": 90,
+        "y": 90
+      }
+    },
+    {
+      "when": {
+        "facing": "east",
+        "flipped": "false",
+        "east": "true"
+      },
+      "apply": {
+        "model": "create_construction_site:block/hazard_plate_red_white_east",
+        "x": 90,
+        "y": 90
+      }
+    },
+    {
+      "when": {
+        "facing": "east",
+        "flipped": "false",
+        "north": "true",
+        "west": "true"
+      },
+      "apply": {
+        "model": "create_construction_site:block/hazard_plate_red_white_north_west",
+        "x": 90,
+        "y": 90
+      }
+    },
+    {
+      "when": {
+        "facing": "east",
+        "flipped": "false",
+        "north": "true",
+        "east": "true"
+      },
+      "apply": {
+        "model": "create_construction_site:block/hazard_plate_red_white_north_east",
+        "x": 90,
+        "y": 90
+      }
+    },
+    {
+      "when": {
+        "facing": "east",
+        "flipped": "false",
+        "south": "true",
+        "west": "true"
+      },
+      "apply": {
+        "model": "create_construction_site:block/hazard_plate_red_white_south_west",
+        "x": 90,
+        "y": 90
+      }
+    },
+    {
+      "when": {
+        "facing": "east",
+        "flipped": "false",
+        "south": "true",
+        "east": "true"
+      },
+      "apply": {
+        "model": "create_construction_site:block/hazard_plate_red_white_south_east",
+        "x": 90,
+        "y": 90
+      }
+    },
+    {
+      "when": {
+        "facing": "east",
+        "flipped": "true"
+      },
+      "apply": {
+        "model": "create_construction_site:block/hazard_plate_red_white_flipped_middle",
+        "x": 90,
+        "y": 90
+      }
+    },
+    {
+      "when": {
+        "facing": "east",
+        "flipped": "true",
+        "north": "true"
+      },
+      "apply": {
+        "model": "create_construction_site:block/hazard_plate_red_white_flipped_north",
+        "x": 90,
+        "y": 90
+      }
+    },
+    {
+      "when": {
+        "facing": "east",
+        "flipped": "true",
+        "south": "true"
+      },
+      "apply": {
+        "model": "create_construction_site:block/hazard_plate_red_white_flipped_south",
+        "x": 90,
+        "y": 90
+      }
+    },
+    {
+      "when": {
+        "facing": "east",
+        "flipped": "true",
+        "west": "true"
+      },
+      "apply": {
+        "model": "create_construction_site:block/hazard_plate_red_white_flipped_west",
+        "x": 90,
+        "y": 90
+      }
+    },
+    {
+      "when": {
+        "facing": "east",
+        "flipped": "true",
+        "east": "true"
+      },
+      "apply": {
+        "model": "create_construction_site:block/hazard_plate_red_white_flipped_east",
+        "x": 90,
+        "y": 90
+      }
+    },
+    {
+      "when": {
+        "facing": "east",
+        "flipped": "true",
+        "north": "true",
+        "west": "true"
+      },
+      "apply": {
+        "model": "create_construction_site:block/hazard_plate_red_white_flipped_north_west",
+        "x": 90,
+        "y": 90
+      }
+    },
+    {
+      "when": {
+        "facing": "east",
+        "flipped": "true",
+        "north": "true",
+        "east": "true"
+      },
+      "apply": {
+        "model": "create_construction_site:block/hazard_plate_red_white_flipped_north_east",
+        "x": 90,
+        "y": 90
+      }
+    },
+    {
+      "when": {
+        "facing": "east",
+        "flipped": "true",
+        "south": "true",
+        "west": "true"
+      },
+      "apply": {
+        "model": "create_construction_site:block/hazard_plate_red_white_flipped_south_west",
+        "x": 90,
+        "y": 90
+      }
+    },
+    {
+      "when": {
+        "facing": "east",
+        "flipped": "true",
+        "south": "true",
+        "east": "true"
+      },
+      "apply": {
+        "model": "create_construction_site:block/hazard_plate_red_white_flipped_south_east",
+        "x": 90,
+        "y": 90
+      }
+    },
+    {
+      "when": {
+        "facing": "south",
+        "flipped": "false"
+      },
+      "apply": {
+        "model": "create_construction_site:block/hazard_plate_red_white_middle",
+        "x": 90,
+        "y": 180
+      }
+    },
+    {
+      "when": {
+        "facing": "south",
+        "flipped": "false",
+        "north": "true"
+      },
+      "apply": {
+        "model": "create_construction_site:block/hazard_plate_red_white_north",
+        "x": 90,
+        "y": 180
+      }
+    },
+    {
+      "when": {
+        "facing": "south",
+        "flipped": "false",
+        "south": "true"
+      },
+      "apply": {
+        "model": "create_construction_site:block/hazard_plate_red_white_south",
+        "x": 90,
+        "y": 180
+      }
+    },
+    {
+      "when": {
+        "facing": "south",
+        "flipped": "false",
+        "west": "true"
+      },
+      "apply": {
+        "model": "create_construction_site:block/hazard_plate_red_white_west",
+        "x": 90,
+        "y": 180
+      }
+    },
+    {
+      "when": {
+        "facing": "south",
+        "flipped": "false",
+        "east": "true"
+      },
+      "apply": {
+        "model": "create_construction_site:block/hazard_plate_red_white_east",
+        "x": 90,
+        "y": 180
+      }
+    },
+    {
+      "when": {
+        "facing": "south",
+        "flipped": "false",
+        "north": "true",
+        "west": "true"
+      },
+      "apply": {
+        "model": "create_construction_site:block/hazard_plate_red_white_north_west",
+        "x": 90,
+        "y": 180
+      }
+    },
+    {
+      "when": {
+        "facing": "south",
+        "flipped": "false",
+        "north": "true",
+        "east": "true"
+      },
+      "apply": {
+        "model": "create_construction_site:block/hazard_plate_red_white_north_east",
+        "x": 90,
+        "y": 180
+      }
+    },
+    {
+      "when": {
+        "facing": "south",
+        "flipped": "false",
+        "south": "true",
+        "west": "true"
+      },
+      "apply": {
+        "model": "create_construction_site:block/hazard_plate_red_white_south_west",
+        "x": 90,
+        "y": 180
+      }
+    },
+    {
+      "when": {
+        "facing": "south",
+        "flipped": "false",
+        "south": "true",
+        "east": "true"
+      },
+      "apply": {
+        "model": "create_construction_site:block/hazard_plate_red_white_south_east",
+        "x": 90,
+        "y": 180
+      }
+    },
+    {
+      "when": {
+        "facing": "south",
+        "flipped": "true"
+      },
+      "apply": {
+        "model": "create_construction_site:block/hazard_plate_red_white_flipped_middle",
+        "x": 90,
+        "y": 180
+      }
+    },
+    {
+      "when": {
+        "facing": "south",
+        "flipped": "true",
+        "north": "true"
+      },
+      "apply": {
+        "model": "create_construction_site:block/hazard_plate_red_white_flipped_north",
+        "x": 90,
+        "y": 180
+      }
+    },
+    {
+      "when": {
+        "facing": "south",
+        "flipped": "true",
+        "south": "true"
+      },
+      "apply": {
+        "model": "create_construction_site:block/hazard_plate_red_white_flipped_south",
+        "x": 90,
+        "y": 180
+      }
+    },
+    {
+      "when": {
+        "facing": "south",
+        "flipped": "true",
+        "west": "true"
+      },
+      "apply": {
+        "model": "create_construction_site:block/hazard_plate_red_white_flipped_west",
+        "x": 90,
+        "y": 180
+      }
+    },
+    {
+      "when": {
+        "facing": "south",
+        "flipped": "true",
+        "east": "true"
+      },
+      "apply": {
+        "model": "create_construction_site:block/hazard_plate_red_white_flipped_east",
+        "x": 90,
+        "y": 180
+      }
+    },
+    {
+      "when": {
+        "facing": "south",
+        "flipped": "true",
+        "north": "true",
+        "west": "true"
+      },
+      "apply": {
+        "model": "create_construction_site:block/hazard_plate_red_white_flipped_north_west",
+        "x": 90,
+        "y": 180
+      }
+    },
+    {
+      "when": {
+        "facing": "south",
+        "flipped": "true",
+        "north": "true",
+        "east": "true"
+      },
+      "apply": {
+        "model": "create_construction_site:block/hazard_plate_red_white_flipped_north_east",
+        "x": 90,
+        "y": 180
+      }
+    },
+    {
+      "when": {
+        "facing": "south",
+        "flipped": "true",
+        "south": "true",
+        "west": "true"
+      },
+      "apply": {
+        "model": "create_construction_site:block/hazard_plate_red_white_flipped_south_west",
+        "x": 90,
+        "y": 180
+      }
+    },
+    {
+      "when": {
+        "facing": "south",
+        "flipped": "true",
+        "south": "true",
+        "east": "true"
+      },
+      "apply": {
+        "model": "create_construction_site:block/hazard_plate_red_white_flipped_south_east",
+        "x": 90,
+        "y": 180
+      }
+    },
+    {
+      "when": {
+        "facing": "west",
+        "flipped": "false"
+      },
+      "apply": {
+        "model": "create_construction_site:block/hazard_plate_red_white_middle",
+        "x": 90,
+        "y": 270
+      }
+    },
+    {
+      "when": {
+        "facing": "west",
+        "flipped": "false",
+        "north": "true"
+      },
+      "apply": {
+        "model": "create_construction_site:block/hazard_plate_red_white_north",
+        "x": 90,
+        "y": 270
+      }
+    },
+    {
+      "when": {
+        "facing": "west",
+        "flipped": "false",
+        "south": "true"
+      },
+      "apply": {
+        "model": "create_construction_site:block/hazard_plate_red_white_south",
+        "x": 90,
+        "y": 270
+      }
+    },
+    {
+      "when": {
+        "facing": "west",
+        "flipped": "false",
+        "west": "true"
+      },
+      "apply": {
+        "model": "create_construction_site:block/hazard_plate_red_white_west",
+        "x": 90,
+        "y": 270
+      }
+    },
+    {
+      "when": {
+        "facing": "west",
+        "flipped": "false",
+        "east": "true"
+      },
+      "apply": {
+        "model": "create_construction_site:block/hazard_plate_red_white_east",
+        "x": 90,
+        "y": 270
+      }
+    },
+    {
+      "when": {
+        "facing": "west",
+        "flipped": "false",
+        "north": "true",
+        "west": "true"
+      },
+      "apply": {
+        "model": "create_construction_site:block/hazard_plate_red_white_north_west",
+        "x": 90,
+        "y": 270
+      }
+    },
+    {
+      "when": {
+        "facing": "west",
+        "flipped": "false",
+        "north": "true",
+        "east": "true"
+      },
+      "apply": {
+        "model": "create_construction_site:block/hazard_plate_red_white_north_east",
+        "x": 90,
+        "y": 270
+      }
+    },
+    {
+      "when": {
+        "facing": "west",
+        "flipped": "false",
+        "south": "true",
+        "west": "true"
+      },
+      "apply": {
+        "model": "create_construction_site:block/hazard_plate_red_white_south_west",
+        "x": 90,
+        "y": 270
+      }
+    },
+    {
+      "when": {
+        "facing": "west",
+        "flipped": "false",
+        "south": "true",
+        "east": "true"
+      },
+      "apply": {
+        "model": "create_construction_site:block/hazard_plate_red_white_south_east",
+        "x": 90,
+        "y": 270
+      }
+    },
+    {
+      "when": {
+        "facing": "west",
+        "flipped": "true"
+      },
+      "apply": {
+        "model": "create_construction_site:block/hazard_plate_red_white_flipped_middle",
+        "x": 90,
+        "y": 270
+      }
+    },
+    {
+      "when": {
+        "facing": "west",
+        "flipped": "true",
+        "north": "true"
+      },
+      "apply": {
+        "model": "create_construction_site:block/hazard_plate_red_white_flipped_north",
+        "x": 90,
+        "y": 270
+      }
+    },
+    {
+      "when": {
+        "facing": "west",
+        "flipped": "true",
+        "south": "true"
+      },
+      "apply": {
+        "model": "create_construction_site:block/hazard_plate_red_white_flipped_south",
+        "x": 90,
+        "y": 270
+      }
+    },
+    {
+      "when": {
+        "facing": "west",
+        "flipped": "true",
+        "west": "true"
+      },
+      "apply": {
+        "model": "create_construction_site:block/hazard_plate_red_white_flipped_west",
+        "x": 90,
+        "y": 270
+      }
+    },
+    {
+      "when": {
+        "facing": "west",
+        "flipped": "true",
+        "east": "true"
+      },
+      "apply": {
+        "model": "create_construction_site:block/hazard_plate_red_white_flipped_east",
+        "x": 90,
+        "y": 270
+      }
+    },
+    {
+      "when": {
+        "facing": "west",
+        "flipped": "true",
+        "north": "true",
+        "west": "true"
+      },
+      "apply": {
+        "model": "create_construction_site:block/hazard_plate_red_white_flipped_north_west",
+        "x": 90,
+        "y": 270
+      }
+    },
+    {
+      "when": {
+        "facing": "west",
+        "flipped": "true",
+        "north": "true",
+        "east": "true"
+      },
+      "apply": {
+        "model": "create_construction_site:block/hazard_plate_red_white_flipped_north_east",
+        "x": 90,
+        "y": 270
+      }
+    },
+    {
+      "when": {
+        "facing": "west",
+        "flipped": "true",
+        "south": "true",
+        "west": "true"
+      },
+      "apply": {
+        "model": "create_construction_site:block/hazard_plate_red_white_flipped_south_west",
+        "x": 90,
+        "y": 270
+      }
+    },
+    {
+      "when": {
+        "facing": "west",
+        "flipped": "true",
+        "south": "true",
+        "east": "true"
+      },
+      "apply": {
+        "model": "create_construction_site:block/hazard_plate_red_white_flipped_south_east",
+        "x": 90,
+        "y": 270
+      }
+    }
+  ]
+}

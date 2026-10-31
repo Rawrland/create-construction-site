@@ -11,6 +11,9 @@ import net.minecraft.util.RandomSource;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.InteractionResult;
+import java.util.List;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.context.BlockPlaceContext;
 import net.minecraft.world.item.context.UseOnContext;
 import net.minecraft.world.level.Level;
@@ -193,6 +196,42 @@ public class DumpBodyBlock extends Block implements IBE<DumpBodyBlockEntity>, IW
             boolean nowOpen = body.toggleGate(side);
             level.playSound(null, pos, nowOpen ? SoundEvents.IRON_TRAPDOOR_OPEN : SoundEvents.IRON_TRAPDOOR_CLOSE,
                 SoundSource.BLOCKS, 0.6F, 1.4F);
+        }
+        return InteractionResult.SUCCESS;
+    }
+
+    /**
+     * Wrench, sneak and right-click: picks up one slice of the dump body, with its load,
+     * into the player's inventory, like the Excavator Bucket (owner, 20 October 2026).
+     * A slice is the layer of blocks the clicked block is in, flat against the clicked face.
+     * (Create calls this method by name; it replaces Create's default of picking up one block.)
+     */
+    public InteractionResult onSneakWrenched(BlockState state, UseOnContext context) {
+        Level level = context.getLevel();
+        BlockPos pos = context.getClickedPos();
+        Player player = context.getPlayer();
+        if (!(level instanceof ServerLevel serverLevel)) {
+            return InteractionResult.SUCCESS;
+        }
+        if (!(level.getBlockEntity(pos) instanceof DumpBodyBlockEntity clicked)) {
+            return InteractionResult.PASS;
+        }
+        // Work out the slice first: removing its first block already takes the dump body apart.
+        List<BlockPos> slice = clicked.getLayerPositions(context.getClickedFace());
+        boolean giveItems = player != null && !player.isCreative();
+        for (BlockPos slicePos : slice) {
+            if (!(level.getBlockEntity(slicePos) instanceof DumpBodyBlockEntity member)) {
+                continue;
+            }
+            // Take the load out first, so removing the block does not drop it on the ground.
+            List<ItemStack> items = member.removeContentAsBroken(serverLevel);
+            items.add(new ItemStack(level.getBlockState(slicePos).getBlock()));
+            if (giveItems) {
+                for (ItemStack stack : items) {
+                    player.getInventory().placeItemBackInInventory(stack);
+                }
+            }
+            level.destroyBlock(slicePos, false);
         }
         return InteractionResult.SUCCESS;
     }

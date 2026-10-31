@@ -1,5 +1,10 @@
 package dev.rawrland.constructionsite.client;
 
+import dev.rawrland.constructionsite.content.tool.ToolPaint;
+import net.minecraft.world.item.DyeColor;
+
+import javax.annotation.Nullable;
+
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import com.mojang.math.Axis;
@@ -14,6 +19,7 @@ import net.minecraft.client.renderer.block.BlockRenderDispatcher;
 import net.minecraft.client.renderer.blockentity.BlockEntityRenderer;
 import net.minecraft.client.renderer.blockentity.BlockEntityRendererProvider;
 import net.minecraft.client.renderer.texture.OverlayTexture;
+import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.core.Direction;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.inventory.InventoryMenu;
@@ -116,11 +122,12 @@ public class DumpBodyRenderer implements BlockEntityRenderer<DumpBodyBlockEntity
     // vertical braces, tailgates with a boxed edge and a middle rib, hinges at the top
     // and swivel-bolt locks at the bottom corners, and a steel floor plate. Everything
     // stays inside the blocks: panels sit 1 pixel back from the outer face, and the
-    // braces, ribs, hinges and locks fill that pixel.
+    // braces, ribs, hinges and locks fill that pixel. Only the tailgate levers stand half
+    // a pixel proud, so they do not share a face with the stakes.
 
     /** An empty new body, closed on all sides as it is placed, for the item (see {@link ToolItemRenderer}). */
-    static void drawEmptyBody(ToolPainter painter, int sx, int sy, int sz) {
-        Parts parts = new Parts();
+    static void drawEmptyBody(ToolPainter painter, int sx, int sy, int sz, @Nullable DyeColor colour) {
+        Parts parts = new Parts(colour);
         float w = sx * 16.0F;
         float h = sy * 16.0F;
         float d = sz * 16.0F;
@@ -131,7 +138,12 @@ public class DumpBodyRenderer implements BlockEntityRenderer<DumpBodyBlockEntity
     }
 
     private static final class Parts {
-        final ToolPainter.Material painted = ToolPainter.framed(ToolPainter.PAINTED);
+        final ToolPainter.Material painted;
+
+        Parts(@Nullable DyeColor colour) {
+            painted = ToolPainter.body(colour);
+        }
+
         final ToolPainter.Material steel = ToolPainter.framed(ToolPainter.DARK_STEEL);
         final ToolPainter.Material dark = ToolPainter.plain(ToolPainter.DARK_STEEL);
         final ToolPainter.Material tread = new ToolPainter.Material(ToolPainter.sprite(texture("tread_plate")), null);
@@ -144,7 +156,7 @@ public class DumpBodyRenderer implements BlockEntityRenderer<DumpBodyBlockEntity
 
     private static void drawBody(VertexConsumer buffer, PoseStack poseStack, int light, int sx, int sy, int sz,
                                  BlockState state, float[] progress, float openAngle) {
-        Parts parts = new Parts();
+        Parts parts = new Parts(ToolPaint.of(state.getBlock()));
         float w = sx * 16.0F;
         float h = sy * 16.0F;
         float d = sz * 16.0F;
@@ -192,8 +204,15 @@ public class DumpBodyRenderer implements BlockEntityRenderer<DumpBodyBlockEntity
     private static void drawFrame(ToolPainter p, Parts parts, float w, float h, float d) {
         // The floor covers the whole footprint, under the walls too, so nothing can be
         // seen through at the bottom edge, also not under an open tailgate.
-        p.box(parts.painted, 0, 0, 0, w, FLOOR, d, ToolPainter.TOP);
-        p.face(parts.tread.fill(), 1, 1, FLOOR, 0, w, 0, d);
+        // Dark steel outside: its sides, its underside, and the strip of its top that shows
+        // in front of the walls. Inside the walls the top is tread plate (owner, 20 October 2026).
+        p.box(parts.steel, 0, 0, 0, w, FLOOR, d, ToolPainter.TOP);
+        p.face(parts.tread.fill(), 1, 1, FLOOR, POST, w - POST, POST, d - POST);
+        TextureAtlasSprite edge = parts.dark.fill();
+        p.face(edge, 1, 1, FLOOR, 0, w, 0, POST);
+        p.face(edge, 1, 1, FLOOR, 0, w, d - POST, d);
+        p.face(edge, 1, 1, FLOOR, 0, POST, POST, d - POST);
+        p.face(edge, 1, 1, FLOOR, w - POST, w, POST, d - POST);
         float[][] corners = {{0, 0}, {w - POST, 0}, {0, d - POST}, {w - POST, d - POST}};
         for (float[] c : corners) {
             p.box(parts.steel, c[0], FLOOR, c[1], c[0] + POST, h, c[1] + POST);
@@ -219,27 +238,33 @@ public class DumpBodyRenderer implements BlockEntityRenderer<DumpBodyBlockEntity
                 float at = block * 16.0F;
                 sideBox(p, parts.painted, side, FLOOR, h - RAIL, 0.5F, 1.0F, w, d, at - 1.5F, at + 1.5F);
             }
-            // ... and a dark steel locking bar across the whole wall, held by a bracket at each stake.
+            // ... and a dark steel locking bar across the wall, held by a bracket next to each stake.
+            // Bar and brackets touch the stakes but never reach into them, and the bar runs only
+            // between the brackets: overlapping boxes would share a face and flicker.
             float barMiddle = (FLOOR + h - RAIL) / 2.0F;
-            sideBox(p, parts.dark, side, barMiddle - 1.0F, barMiddle + 1.0F, 0, 0.5F, w, d,
-                POST - 0.5F, length - POST + 0.5F);
+            float bracket = 2.5F;
+            sideBox(p, parts.dark, side, barMiddle - 1.0F, barMiddle + 1.0F, 0.25F, 1.0F, w, d,
+                POST + bracket, length - POST - bracket);
             sideBox(p, parts.dark, side, barMiddle - 2.0F, barMiddle + 2.0F, 0, 1.0F, w, d,
-                POST - 1.5F, POST + 1.0F);
+                POST, POST + bracket);
             sideBox(p, parts.dark, side, barMiddle - 2.0F, barMiddle + 2.0F, 0, 1.0F, w, d,
-                length - POST - 1.0F, length - POST + 1.5F);
+                length - POST - bracket, length - POST);
             return;
         }
         // Swivel-bolt locks on the stakes at the tailgate's bottom corners: a lever and its bolt.
+        // The lever stands half a pixel proud of the stake: with its front in the stake's own
+        // face the two would flicker (owner, 20 October 2026).
         for (float at : new float[] {0.5F, length - POST + 0.5F}) {
-            sideBox(p, parts.dark, side, FLOOR + 0.5F, FLOOR + 5.0F, 0, 0.5F, w, d, at, at + 2.0F);
+            sideBox(p, parts.dark, side, FLOOR + 0.5F, FLOOR + 5.0F, -0.5F, 0.5F, w, d, at, at + 2.0F);
         }
-        sideBox(p, parts.dark, side, FLOOR + 1.5F, FLOOR + 3.0F, 0, 1.0F, w, d, POST - 1.0F, POST + 2.0F);
+        // The bolts start at the stakes, not inside them (a shared face would flicker).
+        sideBox(p, parts.dark, side, FLOOR + 1.5F, FLOOR + 3.0F, 0, 1.0F, w, d, POST, POST + 2.0F);
         sideBox(p, parts.dark, side, FLOOR + 1.5F, FLOOR + 3.0F, 0, 1.0F, w, d,
-            length - POST - 2.0F, length - POST + 1.0F);
+            length - POST - 2.0F, length - POST);
         // Hinges under the rail: one at each end, and one in the middle of every block between.
         for (int block = 0; block < blocks; block++) {
             float middle = block == 0 ? POST + 3.0F : block == blocks - 1 ? length - POST - 3.0F : block * 16.0F + 8.0F;
-            sideBox(p, parts.dark, side, h - RAIL - 2.5F, h - RAIL + 0.5F, 0, 1.0F, w, d,
+            sideBox(p, parts.dark, side, h - RAIL - 2.5F, h - RAIL, 0, 1.0F, w, d,
                 middle - 2.0F, middle + 2.0F);
             if (blocks == 1) {
                 break;

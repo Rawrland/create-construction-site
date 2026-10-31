@@ -33,9 +33,11 @@ from pathlib import Path
 
 sys.dont_write_bytecode = True  # no __pycache__ folder next to the Ponder script
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "ponder"))
+import uuid  # noqa: E402
+
 from generate_schematics import (  # noqa: E402
-    MOD, TAG_COMPOUND, TAG_STRING, Byte, Int, List, Structure,
-    blade_nbt, bucket_nbt, dump_body, joined_blade, joined_bucket_row,
+    MOD, TAG_COMPOUND, TAG_STRING, Byte, Float, Int, IntArray, List, Structure,
+    blade_nbt, bucket_nbt, dump_body, dump_body_nbt, joined_blade, joined_bucket_row,
 )
 
 PACK_FORMAT = 48  # data packs for Minecraft 1.21.1
@@ -314,6 +316,276 @@ dump_body_closed_side = dump_body_on_bearing(
     ])
 
 
+# The paint versions, in the order of the creative tab (bare first).
+DYES = ["white", "light_gray", "gray", "black", "brown", "red", "orange", "yellow",
+        "lime", "green", "cyan", "light_blue", "blue", "purple", "magenta", "pink"]
+VERSIONS = [None] + DYES
+
+
+def painted(dye, name):
+    return f"{MOD}:{name}" if dye is None else f"{MOD}:{dye}_{name}"
+
+
+def paint_shop():
+    """
+    Every version of each tool in a row (bare first; neighbours of different colours must not
+    join), a chest with dyes and bare tools, a crafting table, a water cauldron, and a Create
+    washing setup: a fan blowing through a single water block onto a depot.
+    """
+    s = Structure(21, 4, 14)
+    floor(s)
+    for i, dye in enumerate(VERSIONS):
+        x = 2 + i
+        s.set((x, 1, 3), painted(dye, "excavator_bucket"), bucket_nbt(), facing="north", joined="true")
+        s.set((x, 1, 5), painted(dye, "bulldozer_blade"), blade_nbt(), facing="north", joined="true")
+        props = {f"gate_{side}": "false" for side in ("north", "east", "south", "west")}
+        s.set((x, 1, 7), painted(dye, "dump_body"), dump_body_nbt(), joined="false", **props)
+    chest(s, (2, 1, 10), "north", [(f"minecraft:{d}_dye", 64) for d in DYES] + [
+        (f"{MOD}:excavator_bucket", 64), (f"{MOD}:bulldozer_blade", 64), (f"{MOD}:dump_body", 64),
+        (f"{MOD}:corrugated_sheet", 64), (f"{MOD}:brass_plating", 64), ("create:industrial_iron_block", 64)])
+    s.set((4, 1, 10), "minecraft:crafting_table")
+    s.set((6, 1, 10), "minecraft:water_cauldron", level="3")
+    # Create's bulk washing: motor, fan blowing east, one water block closed in by glass, then a depot.
+    s.set((10, 1, 10), "create:creative_motor", {"id": "create:creative_motor"}, facing="east")
+    s.set((11, 1, 10), "create:encased_fan", {"id": "create:encased_fan"}, facing="east")
+    s.set((12, 1, 10), "minecraft:water")
+    for pos in [(12, 1, 9), (12, 1, 11), (12, 2, 10)]:
+        s.set(pos, "minecraft:glass")
+    s.set((13, 1, 10), "create:depot", {"id": "create:depot"})
+    # Standing signs at the start of each row (a wall sign would not hold on a tool).
+    for z, label in [(3, "Buckets"), (5, "Blades"), (7, "Dump Bodies")]:
+        s.set((1, 1, z), "minecraft:oak_sign", sign_nbt([label]), rotation="12", waterlogged="false")
+    wall_sign(s, (2, 1, 9), "north", ["Dyes and", "bare tools"])
+    wall_sign(s, (6, 1, 9), "north", ["Water", "Cauldron"])
+    wall_sign(s, (13, 1, 9), "north", ["Fan washing:", "put a painted", "item on the", "Depot"])
+    return s, ["Paint shop"], [
+        "Look at the rows: bare first, then the 16 colours. Craft a bare tool with a dye, and eight around one dye. "
+        "Use a painted tool item on the Water Cauldron; put one on the Depot in front of the fan.",
+        "Expect: bare tools are brass and painted ones their colour, all with dark steel teeth and "
+        "blade edges; and tools of different colours next to each other do not join. Crafting gives one, or eight. The "
+        "cauldron turns the whole stack bare and loses one level of water; the fan washes items on the Depot bare. "
+        "Right-clicking a placed tool with a dye does nothing. Ponder (W) opens for every colour.",
+    ]
+
+
+def metal_yard():
+    """Every metal block in its typical use."""
+    s = Structure(30, 6, 15)
+    floor(s)
+    # A wall of the 16 colours of Brass Plating, 2 by 2 each, in two rows of eight.
+    for i, dye in enumerate(DYES):
+        x0, y0 = 1 + 2 * (i % 8), 1 + 2 * (i // 8)
+        for dx in range(2):
+            for dy in range(2):
+                s.set((x0 + dx, y0 + dy, 2), painted(dye, "brass_plating"))
+    # One 3 by 3 wall of bare Brass Plating on its own, for the one frame around a surface.
+    for x in range(18, 21):
+        for y in range(1, 4):
+            s.set((x, y, 2), f"{MOD}:brass_plating")
+    # 3 by 3 walls of Dark Steel Plating and Polished Iron Plating, the tools' dark steel and a light iron.
+    for x in range(22, 25):
+        for y in range(1, 4):
+            s.set((x, y, 2), f"{MOD}:dark_steel_plating")
+            s.set((x + 4, y, 2), f"{MOD}:polished_iron_plating")
+    # Tread plate: a floor, stairs up and a slab.
+    for x in range(1, 5):
+        for z in range(5, 8):
+            s.set((x, 0, z), f"{MOD}:tread_plate")
+    s.set((5, 1, 6), f"{MOD}:tread_plate_stairs", facing="east", half="bottom", shape="straight", waterlogged="false")
+    s.set((6, 1, 6), f"{MOD}:tread_plate")
+    s.set((6, 2, 6), f"{MOD}:tread_plate_stairs", facing="east", half="bottom", shape="straight", waterlogged="false")
+    s.set((7, 2, 6), f"{MOD}:tread_plate_slab", type="bottom", waterlogged="false")
+    # Hazard stripes, and plates on a floor, a wall and a ceiling.
+    s.set((10, 1, 5), f"{MOD}:hazard_stripes", flipped="false")
+    s.set((11, 1, 5), f"{MOD}:hazard_stripes", flipped="true")
+    s.set((12, 1, 5), f"{MOD}:hazard_stripes_red_white", flipped="false")
+    s.set((10, 1, 7), f"{MOD}:hazard_plate", facing="up", flipped="false")
+    s.set((11, 1, 7), f"{MOD}:hazard_plate_red_white", facing="up", flipped="false")
+    s.set((14, 1, 6), "minecraft:stone")
+    s.set((14, 2, 6), "minecraft:stone")
+    s.set((14, 3, 6), "minecraft:stone")
+    s.set((13, 1, 6), f"{MOD}:hazard_plate", facing="west", flipped="false")
+    s.set((15, 2, 6), f"{MOD}:hazard_plate_red_white", facing="east", flipped="false")
+    s.set((15, 3, 7), "minecraft:stone")
+    s.set((15, 2, 7), f"{MOD}:hazard_plate", facing="down", flipped="false")
+    # Corrugated sheet: a shed wall with ribs up, one with ribs across, and a row of every colour.
+    for x in range(1, 4):
+        for y in range(1, 3):
+            s.set((x, y, 10), f"{MOD}:corrugated_sheet", axis="y")
+    for x in range(5, 8):
+        for y in range(1, 3):
+            s.set((x, y, 10), f"{MOD}:corrugated_sheet", axis="x")
+    for i, dye in enumerate(VERSIONS):
+        s.set((1 + i, 1, 13), painted(dye, "corrugated_sheet"), axis="y")
+    # Grating: a walkway of slabs at head height over red wool, reached by tread plate stairs; and a block patch.
+    s.set((10, 1, 10), f"{MOD}:tread_plate_stairs", facing="east", half="bottom", shape="straight", waterlogged="false")
+    s.set((11, 1, 10), f"{MOD}:tread_plate")
+    for x in range(12, 17):
+        for z in range(10, 12):
+            s.set((x, 1, z), f"{MOD}:grating_slab", type="top", waterlogged="false")
+            s.set((x, 0, z), "minecraft:red_wool")
+    for x in range(18, 20):
+        for z in range(10, 12):
+            s.set((x, 0, z), f"{MOD}:grating")
+    # Joined hazard plates: a 3 by 2 patch of yellow on the floor, and a 3 by 2 panel of red-white
+    # on a stone wall. Plates side by side join into one panel; a single plate keeps its margin.
+    for x in range(22, 25):
+        for z in range(5, 7):
+            s.set((x, 1, z), f"{MOD}:hazard_plate", facing="up", flipped="false",
+                  north=str(z > 5).lower(), south=str(z < 6).lower(), west=str(x > 22).lower(), east=str(x < 24).lower())
+    s.set((22, 1, 8), f"{MOD}:hazard_plate", facing="up", flipped="false", north="false", south="false", west="false", east="false")
+    for x in range(26, 29):
+        for y in range(1, 3):
+            s.set((x, y, 8), "minecraft:stone")
+            # Facing north, the plate model's north points down and its south up.
+            s.set((x, y, 7), f"{MOD}:hazard_plate_red_white", facing="north", flipped="false",
+                  north=str(y > 1).lower(), south=str(y < 2).lower(), west=str(x > 26).lower(), east=str(x < 28).lower())
+    chest(s, (20, 1, 6), "north", [(painted(d, "brass_plating"), 64) for d in VERSIONS])
+    chest(s, (20, 1, 9), "north", [
+        (f"{MOD}:tread_plate", 64), (f"{MOD}:tread_plate_slab", 64), (f"{MOD}:tread_plate_stairs", 64),
+        (f"{MOD}:hazard_stripes", 64), (f"{MOD}:hazard_stripes_red_white", 64),
+        (f"{MOD}:hazard_plate", 64), (f"{MOD}:hazard_plate_red_white", 64),
+        (f"{MOD}:grating", 64), (f"{MOD}:grating_slab", 64), (f"{MOD}:corrugated_sheet", 64),
+        (f"{MOD}:dark_steel_plating", 64), (f"{MOD}:polished_iron_plating", 64),
+        ("create:wrench", 1), ("create:brass_sheet", 64)])
+    wall_sign(s, (20, 1, 8), "north", ["Other blocks,", "Wrench and", "Brass Sheets"])
+    wall_sign(s, (20, 1, 5), "north", ["Brass Plating", "all colours"])
+    return s, ["Metal block yard"], [
+        "Look at every block; walk on the tread plate and the grating; use the Wrench on hazard stripes and plates; "
+        "place hazard plates on floors, walls and ceilings; place corrugated sheets against different faces.",
+        "Expect: each colour of the Brass Plating wall has one frame around its 2 by 2 patch, the bare brass 3 by 3 "
+        "wall one frame around the whole wall, and so do the Dark Steel and Polished Iron walls next to it; Dark Steel looks like the tools' frames and teeth. Four Brass Sheets in a square give four Brass Plating. Hazard stripes flip with the Wrench; plates lie flat on their face, keep a small margin on their own and join into one panel with the same plate next to them (yellow patch on the floor, red-white panel on the stone wall), you walk "
+        "into wall plates without bumping. Corrugated ribs run up or across and continue across block joins. "
+        "You see the red wool through the grating and can walk on it.",
+    ]
+
+
+def site_yard():
+    """The site barriers (add-site-barriers): cones (with lamps), delineator posts, barrier boards, site fence."""
+    s = Structure(26, 8, 15)
+    floor(s)
+    # Traffic cones: one, two and three stacked; and the same with a flasher, a beacon, a flasher.
+    for i, cones in enumerate([1, 2, 3]):
+        s.set((1 + 2 * i, 1, 2), f"{MOD}:traffic_cone", cones=str(cones), base="true", top="true", lamp="none",
+              lamp_axis="z")
+        s.set((18 + 2 * i, 1, 2), f"{MOD}:traffic_cone", cones=str(cones), base="true", top="true",
+              lamp=["flasher", "beacon", "flasher"][i], lamp_axis="z")
+    # A tall column of 20 cones over three blocks, with a beacon on top: breaking any part breaks all.
+    for y, cones in ((1, 8), (2, 8), (3, 4)):
+        s.set((12, y, 5), f"{MOD}:traffic_cone", cones=str(cones), base=str(y == 1).lower(), top=str(y == 3).lower(),
+              lamp="beacon" if y == 3 else "none", lamp_axis="z")
+    # Warning lamps on their own, on a "truck" of iron blocks: on the roof, on the side and under
+    # an overhang (floor, wall and ceiling).
+    for x in range(15, 20):
+        s.set((x, 1, 11), "minecraft:iron_block")
+    s.set((19, 2, 11), "minecraft:iron_block")
+    s.set((19, 3, 11), "minecraft:iron_block")
+    s.set((20, 3, 11), "minecraft:iron_block")
+    s.set((15, 2, 11), f"{MOD}:warning_flasher", face="floor", facing="south")
+    s.set((17, 2, 11), f"{MOD}:warning_beacon", face="floor", facing="south")
+    s.set((16, 1, 12), f"{MOD}:warning_flasher", face="wall", facing="south")
+    s.set((18, 1, 12), f"{MOD}:warning_beacon", face="wall", facing="south")
+    s.set((20, 2, 11), f"{MOD}:warning_flasher", face="ceiling", facing="south")
+    # Delineator posts along a "road edge", striped both ways, facing south (toward the reset button).
+    for i in range(4):
+        s.set((9 + 2 * i, 1, 2), f"{MOD}:delineator", facing="south", flipped=str(i >= 2).lower())
+    # Barrier boards: one on its own, and three joined, facing south.
+    s.set((1, 1, 5), f"{MOD}:barrier_board", facing="south", left="false", right="false")
+    for x in [4, 5, 6]:
+        # Facing south, left is the facing turned clockwise: west (x - 1).
+        s.set((x, 1, 5), f"{MOD}:barrier_board", facing="south", left=str(x > 4).lower(), right=str(x < 6).lower())
+
+    # Site fence (two blocks tall): a run along x with a corner, a T, a part stacked four high,
+    # and green and orange tarps on some blocks.
+    fence = {(x, 9) for x in range(1, 12)} | {(11, z) for z in range(10, 14)} | {(6, z) for z in range(10, 13)}
+    stacked = {(x, 9) for x in range(2, 5)}
+    tarps = {(8, 9): "green", (9, 9): "green", (11, 12): "orange", (11, 9): "blue", (10, 9): "blue", (11, 10): "blue"}
+
+    def fence_state(x, y, z, half, tarp):
+        e, w = (x + 1, z) in fence, (x - 1, z) in fence
+        n, so = (x, z - 1) in fence, (x, z + 1) in fence
+        if e and w and not n and not so:
+            post = x % 2 == 0
+        elif n and so and not e and not w:
+            post = z % 2 == 0
+        else:
+            post = True
+        return dict(north=str(n).lower(), east=str(e).lower(), south=str(so).lower(), west=str(w).lower(),
+                    waterlogged="false", half=half, post=str(post).lower(),
+                    bottom=str(half == "lower" and y == 1).lower(), tarp=tarp,
+                    # The orange tarp hangs on the west side, the green ones on the south side.
+                    tarp_south="true", tarp_east=str((x, z) not in ((11, 12), (11, 9), (11, 10))).lower())
+    for (x, z) in fence:
+        tarp = tarps.get((x, z), "none")
+        for y, half in ((1, "lower"), (2, "upper")) + (((3, "lower"), (4, "upper")) if (x, z) in stacked else ()):
+            s.set((x, y, z), f"{MOD}:site_fence", **fence_state(x, y, z, half, tarp))
+    chest(s, (24, 1, 6), "north", [(f"{MOD}:traffic_cone", 64), (f"{MOD}:warning_flasher", 16), (f"{MOD}:warning_beacon", 16),
+                                   (f"{MOD}:delineator", 64), (f"{MOD}:barrier_board", 64), (f"{MOD}:site_fence", 64),
+                                   ("minecraft:green_carpet", 16), ("minecraft:blue_carpet", 16), ("minecraft:shears", 1),
+                                   ("create:wrench", 1)])
+    wall_sign(s, (24, 1, 5), "north", ["Site barriers", "", "", ""])
+    return s, ["Site barriers"], [
+        "Use cones on cones to stack them (any height, the column grows into the blocks above), put a Warning Flasher or Warning Beacon on a cone, sneak with an empty hand to take it off (then the top cone; sneaking with a cone also takes the top cone off); place the lamps on floors, walls and ceilings too (see the iron truck). "
+        "Place delineator posts and barrier boards in a row, site fence in runs, corners and stacked; use a carpet on the fence from either side and shears to take it off. "
+        "Use the Wrench on a delineator post.",
+        "Expect: cones stack, a column breaks all at once and drops every cone, lamps sit on top of the stack, blink and give light, the flasher's lens faces you; on their own the lamps stand, hang and stick to walls and stay when the block behind goes; delineator posts face you and the Wrench flips their stripes; "
+        "barrier boards in a row join with one stand per joint and cannot be jumped over; the fence is two blocks tall, joins in every direction, has a post, feet and clamps "
+        "on every other block of a straight run and at every end, corner and T, stacks without feet, and takes a tarp in the carpet's colour on the side you stand on.",
+    ]
+
+
+def plating_steps():
+    """Slabs and stairs of the platings (add-metal-slabs-and-stairs), in four materials, one row
+    each: a wall with stairs on top, slabs beside a block, a block and a half, a ceiling of top
+    slabs, the four stair corners and a short flight up."""
+    s = Structure(26, 6, 15)
+    floor(s)
+    rows = [("brass_plating", 2), ("red_brass_plating", 5), ("dark_steel_plating", 8), ("polished_iron_plating", 11)]
+
+    def stairs(pos, block, facing, shape="straight", half="bottom"):
+        s.set(pos, f"{MOD}:{block}_stairs", facing=facing, half=half, shape=shape, waterlogged="false")
+
+    def slab(pos, block, kind):
+        s.set(pos, f"{MOD}:{block}_slab", type=kind, waterlogged="false")
+
+    for block, z in rows:
+        full = f"{MOD}:{block}"
+        # A wall two high, three wide, with stairs on top rising away from you.
+        for x in range(1, 4):
+            s.set((x, 1, z), full)
+            s.set((x, 2, z), full)
+            stairs((x, 3, z), block, "north")
+        # Bottom slabs beside a block, and a block and a half.
+        for x in range(5, 8):
+            slab((x, 1, z), block, "bottom")
+        s.set((8, 1, z), full)
+        s.set((9, 1, z), full)
+        slab((9, 2, z), block, "bottom")
+        # A ceiling of top slabs.
+        for x in range(11, 13):
+            slab((x, 2, z), block, "top")
+        # The stair corners: inner and outer, left and right.
+        stairs((14, 1, z), block, "north", "inner_left")
+        stairs((15, 1, z), block, "north", "inner_right")
+        stairs((16, 1, z), block, "north", "outer_left")
+        stairs((17, 1, z), block, "north", "outer_right")
+        # A short flight up onto a block, and a double slab.
+        stairs((19, 1, z), block, "east")
+        s.set((20, 1, z), full)
+        stairs((20, 2, z), block, "east")
+        slab((21, 2, z), block, "double")
+    versions = [painted(d, "brass_plating") for d in VERSIONS] + [f"{MOD}:dark_steel_plating", f"{MOD}:polished_iron_plating"]
+    chest(s, (24, 1, 2), "north", [(v + "_slab", 64) for v in versions])
+    chest(s, (24, 1, 4), "north", [(v + "_stairs", 64) for v in versions])
+    chest(s, (24, 1, 6), "north", [(v, 64) for v in versions])
+    wall_sign(s, (24, 1, 1), "north", ["Plating", "slabs and stairs", "", ""])
+    return s, ["Plating", "slabs and stairs"], [
+        "Look at the rows (bare brass, red, dark steel, polished iron), then build your own with the slabs, stairs and blocks from the chests.",
+        "Expect: a slab or stair joins its block and the other slabs and stairs of the same colour into one surface with one frame around it; "
+        "the frame follows every edge where the surface ends, also the top of a slab's side and the foot of a step; different colours keep their own frames.",
+    ]
+
+
 CREATE_STATIONS = {
     "bucket_digging": bucket_digging,
     "bucket_emptying": bucket_emptying,
@@ -326,6 +598,10 @@ CREATE_STATIONS = {
     "dump_body_loading": dump_body_loading,
     "dump_body_tipping": dump_body_tipping,
     "dump_body_closed_side": dump_body_closed_side,
+    "paint_shop": paint_shop,
+    "metal_yard": metal_yard,
+    "plating_steps": plating_steps,
+    "site_yard": site_yard,
 }
 
 
@@ -426,11 +702,64 @@ def dump_body_swivel():
     ]
 
 
+def uuid_ints(value):
+    """A UUID as Minecraft saves it: four signed ints, most significant first."""
+    n = value.int
+    ints = [(n >> shift) & 0xFFFFFFFF for shift in (96, 64, 32, 0)]
+    return IntArray([i - (1 << 32) if i >= (1 << 31) else i for i in ints])
+
+
+def cylinder_mount_nbt(link, barrel_end, tube, speed, driven=True):
+    """One end of a linked Hydraulic Cylinder (CylinderMountBlockEntity's saved data)."""
+    return {"id": f"{MOD}:cylinder_mount", "CylinderLink": uuid_ints(link),
+            "BarrelEnd": Byte(1 if barrel_end else 0), "TubeLength": Float(tube),
+            "Driven": Byte(1 if driven else 0), "Speed": Float(speed), "Inverted": Byte(0), "Signal": Int(0)}
+
+
+def hydraulic_cylinder():
+    """
+    The proof for the driven Hydraulic Cylinder (add-cylinder-push, add-cylinder-settings): it
+    lifts one glued block by exactly one block.
+    Barrel mount on the floor at (4, 1, 4), facing up. The load above it, glued together: the rod
+    mount hanging under a Brass Plating block (y 2 and 3) and a Physics Assembler on top (y 4).
+    The two mounts are already linked: driven, tube length 1 (reach 1 to 2 blocks), speed 1. As
+    built the cylinder is 1 block long, fully in. A lever beside the barrel mount (x 5): on = 15 =
+    fully out = the load one block higher; off = back down.
+    """
+    s = Structure(9, 7, 9)
+    floor(s)
+    # A fixed link id: one station, one cylinder.
+    link = uuid.uuid5(uuid.NAMESPACE_URL, f"{MOD}/test/hydraulic_cylinder")
+    s.set((4, 1, 4), f"{MOD}:cylinder_mount", cylinder_mount_nbt(link, True, 1.0, 1.0), facing="up", turned="false")
+    s.set((4, 2, 4), f"{MOD}:cylinder_mount", cylinder_mount_nbt(link, False, 1.0, 1.0), facing="down", turned="false")
+    s.set((4, 3, 4), f"{MOD}:brass_plating")
+    s.set((4, 4, 4), "simulated:physics_assembler", face="floor", facing="west")
+    s.glue(4, 2, 4, 4, 4, 4)
+    s.set((5, 1, 4), "minecraft:lever", face="floor", facing="east", powered="false")
+    s.set((6, 1, 4), "minecraft:oak_sign", sign_nbt(["LEVER", "on = up", "off = down"]), rotation="12",
+          waterlogged="false")
+    chest(s, (7, 1, 1), "north", [(f"{MOD}:cylinder_mount", 16), (f"{MOD}:hydraulic_cylinder", 16),
+                                  ("create:analog_lever", 4), (f"{MOD}:brass_plating", 64), ("create:super_glue", 1),
+                                  ("simulated:physics_assembler", 4), ("create:wrench", 1)])
+    wall_sign(s, (7, 1, 0), "north", ["Cylinder parts", "", "", ""])
+    return s, ["Hydraulic", "Cylinder"], [
+        "Hold right-click on the Physics Assembler and pull its lever to assemble the load (it is already glued). "
+        "Then flip the LEVER beside the cylinder on, and later off. Right-click a mount with an empty hand for the "
+        "settings window.",
+        "Expect: lever on, the load rises smoothly by exactly one block in about a second and holds there; "
+        "lever off, it goes back down and rests. No jumping, no bouncing, no shaking. The cylinder is drawn "
+        "between the pins and follows. If nothing moves: rejoin the world once.",
+    ]
+
+
+# Tools on vehicles and Create Aeronautics machines first; the Hydraulic Cylinder next to the
+# Dump Body on its Swivel Bearing (owner, 30 October 2026: technical stations next to each other).
 AERONAUTICS_STATIONS = {
     "vehicle_bucket": vehicle_bucket,
     "vehicle_blade": vehicle_blade,
-    "rope": rope,
     "dump_body_swivel": dump_body_swivel,
+    "hydraulic_cylinder": hydraulic_cylinder,
+    "rope": rope,
 }
 
 

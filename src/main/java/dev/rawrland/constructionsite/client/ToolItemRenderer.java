@@ -12,6 +12,9 @@ import net.minecraft.core.Direction;
 import net.minecraft.world.inventory.InventoryMenu;
 import net.minecraft.world.item.ItemDisplayContext;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.BlockItem;
+import net.minecraft.world.item.DyeColor;
+import dev.rawrland.constructionsite.content.tool.ToolPaint;
 import net.neoforged.neoforge.client.extensions.common.IClientItemExtensions;
 
 /**
@@ -64,10 +67,11 @@ public final class ToolItemRenderer extends BlockEntityWithoutLevelRenderer {
         ToolPainter painter = new ToolPainter(
             bufferSource.getBuffer(RenderType.entityCutoutNoCull(InventoryMenu.BLOCK_ATLAS)),
             poseStack.last(), ITEM_AXES, packedLight);
+        DyeColor colour = stack.getItem() instanceof BlockItem item ? ToolPaint.of(item.getBlock()) : null;
         switch (tool) {
-            case BUCKET -> ExcavatorBucketRenderer.drawBucket(painter, 1, 1, BucketMount.BACK);
-            case BLADE -> BulldozerBladeRenderer.drawBlade(painter, 1, 1, BladeMount.CENTRE);
-            case DUMP_BODY -> DumpBodyRenderer.drawEmptyBody(painter, 1, 1, 1);
+            case BUCKET -> ExcavatorBucketRenderer.drawBucket(painter, 1, 1, BucketMount.BACK, colour);
+            case BLADE -> BulldozerBladeRenderer.drawBlade(painter, 1, 1, BladeMount.CENTRE, colour);
+            case DUMP_BODY -> DumpBodyRenderer.drawEmptyBody(painter, 1, 1, 1, colour);
         }
     }
 }

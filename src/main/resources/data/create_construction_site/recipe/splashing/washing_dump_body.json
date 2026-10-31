@@ -1,0 +1,13 @@
+{
+  "type": "create:splashing",
+  "ingredients": [
+    {
+      "tag": "create_construction_site:painted_dump_bodies"
+    }
+  ],
+  "results": [
+    {
+      "id": "create_construction_site:dump_body"
+    }
+  ]
+}

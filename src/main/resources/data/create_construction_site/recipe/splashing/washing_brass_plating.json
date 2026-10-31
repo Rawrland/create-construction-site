@@ -1,0 +1,13 @@
+{
+  "type": "create:splashing",
+  "ingredients": [
+    {
+      "tag": "create_construction_site:painted_brass_platings"
+    }
+  ],
+  "results": [
+    {
+      "id": "create_construction_site:brass_plating"
+    }
+  ]
+}

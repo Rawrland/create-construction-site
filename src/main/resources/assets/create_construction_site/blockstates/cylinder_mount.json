@@ -1,0 +1,56 @@
+{
+  "variants": {
+    "facing=up,turned=false": {
+      "model": "create_construction_site:block/cylinder_mount"
+    },
+    "facing=up,turned=true": {
+      "model": "create_construction_site:block/cylinder_mount_turned"
+    },
+    "facing=down,turned=false": {
+      "model": "create_construction_site:block/cylinder_mount",
+      "x": 180
+    },
+    "facing=down,turned=true": {
+      "model": "create_construction_site:block/cylinder_mount_turned",
+      "x": 180
+    },
+    "facing=north,turned=false": {
+      "model": "create_construction_site:block/cylinder_mount",
+      "x": 90
+    },
+    "facing=north,turned=true": {
+      "model": "create_construction_site:block/cylinder_mount_turned",
+      "x": 90
+    },
+    "facing=south,turned=false": {
+      "model": "create_construction_site:block/cylinder_mount",
+      "x": 90,
+      "y": 180
+    },
+    "facing=south,turned=true": {
+      "model": "create_construction_site:block/cylinder_mount_turned",
+      "x": 90,
+      "y": 180
+    },
+    "facing=west,turned=false": {
+      "model": "create_construction_site:block/cylinder_mount",
+      "x": 90,
+      "y": 270
+    },
+    "facing=west,turned=true": {
+      "model": "create_construction_site:block/cylinder_mount_turned",
+      "x": 90,
+      "y": 270
+    },
+    "facing=east,turned=false": {
+      "model": "create_construction_site:block/cylinder_mount",
+      "x": 90,
+      "y": 90
+    },
+    "facing=east,turned=true": {
+      "model": "create_construction_site:block/cylinder_mount_turned",
+      "x": 90,
+      "y": 90
+    }
+  }
+}

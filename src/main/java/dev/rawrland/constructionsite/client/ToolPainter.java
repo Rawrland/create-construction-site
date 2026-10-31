@@ -1,5 +1,8 @@
 package dev.rawrland.constructionsite.client;
 
+import javax.annotation.Nullable;
+import net.minecraft.world.item.DyeColor;
+
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import dev.rawrland.constructionsite.CreateConstructionSite;
@@ -38,9 +41,27 @@ final class ToolPainter {
     record Material(TextureAtlasSprite fill, TextureAtlasSprite frame) {
     }
 
-    static final String PAINTED = "painted_steel_yellow";
-    static final String WORN_STEEL = "worn_steel";
-    static final String DARK_STEEL = "dark_steel";
+    /*
+     * The tools are drawn with the textures of the mod's plating blocks, so every part of a tool
+     * looks like a block you can build with (owner, 20 October 2026). The names come from
+     * MetalBlockTextures, which gives the same textures to the blocks.
+     */
+
+    /** The body of a tool: Brass Plating when bare, Brass Plating of its colour when painted. */
+    static Material body(@Nullable DyeColor colour) {
+        return framed(MetalBlockTextures.brassPlating(colour));
+    }
+
+    /**
+     * The working edges (teeth, the blade's cutting edge): Dark Steel Plating on every version,
+     * bare or painted, so the bare tools match the painted ones (owner, 20 October 2026).
+     */
+    static String edge(@Nullable DyeColor colour) {
+        return DARK_STEEL;
+    }
+
+    /** Dark Steel Plating: frames, plates, pins and hinges. */
+    static final String DARK_STEEL = MetalBlockTextures.DARK_STEEL;
 
     /** How wide the frame around a surface is, in pixels: the texture's outline plus its bevel. */
     private static final float BORDER = 2.0F;
@@ -200,8 +221,10 @@ final class ToolPainter {
             return;
         }
         TextureAtlasSprite frame = m.frame();
-        float ba = Math.min(BORDER, (a1 - a0) / 2.0F);
-        float bb = Math.min(BORDER, (b1 - b0) / 2.0F);
+        // The frame is as wide everywhere; only a cell too small for it gets a narrower one, and then
+        // only if it has a frame on both sides. So the frame lines of a stepped panel meet cleanly.
+        float ba = Math.min(BORDER, (a1 - a0) / (left && right ? 2.0F : 1.0F));
+        float bb = Math.min(BORDER, (b1 - b0) / (bottom && top ? 2.0F : 1.0F));
         // Where the middle part starts and ends.
         float ia0 = left ? a0 + ba : a0;
         float ia1 = right ? a1 - ba : a1;
@@ -249,6 +272,18 @@ final class ToolPainter {
         if (highRow) {
             cornerRow(m, axis, facing, at, ia0, ia1, midB1, ib1, dot, innerTopLeft, innerTopRight);
         }
+    }
+
+    /**
+     * A rectangle all in the material's outline colour (the frame texture's outermost column),
+     * for rims too thin to hold a frame and a fill, such as the bucket's front ring.
+     */
+    void outline(Material m, int axis, int facing, float at, float a0, float a1, float b0, float b1) {
+        if (m.frame() == null) {
+            face(m.fill(), axis, facing, at, a0, a1, b0, b1);
+            return;
+        }
+        region(m.frame(), axis, facing, at, a0, a1, b0, b1, 0, 1, 7, 8);
     }
 
     /** A thin row of fill with an outline dot at its left end, its right end, or both. */

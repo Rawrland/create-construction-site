@@ -1,0 +1,8 @@
+{
+  "parent": "minecraft:block/inner_stairs",
+  "textures": {
+    "bottom": "create_construction_site:block/painted_steel_magenta",
+    "top": "create_construction_site:block/painted_steel_magenta",
+    "side": "create_construction_site:block/painted_steel_magenta"
+  }
+}

@@ -28,19 +28,20 @@ public class ConstructionSitePonderPlugin implements PonderPlugin {
 
     @Override
     public void registerScenes(PonderSceneRegistrationHelper<ResourceLocation> helper) {
+        // Every paint version opens the same scenes; the scenes show the bare tools.
         PonderSceneRegistrationHelper<DeferredItem<?>> items = helper.withKeyFunction(DeferredItem::getId);
 
-        items.forComponents(ModItems.EXCAVATOR_BUCKET)
+        items.forComponents(ModItems.EXCAVATOR_BUCKETS.all())
             .addStoryBoard(id("excavator_bucket/sizes"), BucketScenes::sizes, CONSTRUCTION_TOOLS)
             .addStoryBoard(id("excavator_bucket/digging"), ContraptionScenes::digging)
             .addStoryBoard(id("excavator_bucket/emptying"), BucketScenes::emptying);
 
-        items.forComponents(ModItems.BULLDOZER_BLADE)
+        items.forComponents(ModItems.BULLDOZER_BLADES.all())
             .addStoryBoard(id("bulldozer_blade/sizes"), BladeScenes::sizes, CONSTRUCTION_TOOLS)
             .addStoryBoard(id("bulldozer_blade/gaps"), ContraptionScenes::gaps)
             .addStoryBoard(id("bulldozer_blade/full"), BladeScenes::full);
 
-        items.forComponents(ModItems.DUMP_BODY)
+        items.forComponents(ModItems.DUMP_BODIES.all())
             .addStoryBoard(id("dump_body/sizes"), DumpBodyScenes::sizes, CONSTRUCTION_TOOLS)
             .addStoryBoard(id("dump_body/loading"), DumpBodyScenes::loading)
             .addStoryBoard(id("dump_body/tipping"), DumpBodyScenes::tipping);
@@ -50,15 +51,15 @@ public class ConstructionSitePonderPlugin implements PonderPlugin {
         // First the vehicle scenes (its wheels come from Create Aeronautics' Offroad part),
         // then the bucket's rope scene.
         if (Mods.AERONAUTICS && Mods.OFFROAD) {
-            items.forComponents(ModItems.EXCAVATOR_BUCKET)
+            items.forComponents(ModItems.EXCAVATOR_BUCKETS.all())
                 .addStoryBoard(id("excavator_bucket/simulated"), SimulatedContraptionScenes::bucket);
-            items.forComponents(ModItems.BULLDOZER_BLADE)
+            items.forComponents(ModItems.BULLDOZER_BLADES.all())
                 .addStoryBoard(id("bulldozer_blade/simulated"), SimulatedContraptionScenes::blade);
         }
         if (Mods.AERONAUTICS) {
-            items.forComponents(ModItems.EXCAVATOR_BUCKET)
+            items.forComponents(ModItems.EXCAVATOR_BUCKETS.all())
                 .addStoryBoard(id("excavator_bucket/rope"), BucketRopeScene::rope);
-            items.forComponents(ModItems.DUMP_BODY)
+            items.forComponents(ModItems.DUMP_BODIES.all())
                 .addStoryBoard(id("dump_body/simulated"), SimulatedContraptionScenes::dumpBody);
         }
     }
@@ -73,10 +74,10 @@ public class ConstructionSitePonderPlugin implements PonderPlugin {
             .register();
 
         PonderTagRegistrationHelper<DeferredItem<?>> items = helper.withKeyFunction(DeferredItem::getId);
-        items.addToTag(CONSTRUCTION_TOOLS)
-            .add(ModItems.EXCAVATOR_BUCKET)
-            .add(ModItems.BULLDOZER_BLADE)
-            .add(ModItems.DUMP_BODY);
+        var tag = items.addToTag(CONSTRUCTION_TOOLS);
+        ModItems.EXCAVATOR_BUCKETS.all().forEach(tag::add);
+        ModItems.BULLDOZER_BLADES.all().forEach(tag::add);
+        ModItems.DUMP_BODIES.all().forEach(tag::add);
     }
 
     private static ResourceLocation id(String path) {

@@ -1,0 +1,8 @@
+{
+  "parent": "minecraft:block/outer_stairs",
+  "textures": {
+    "bottom": "create_construction_site:block/painted_steel_cyan",
+    "top": "create_construction_site:block/painted_steel_cyan",
+    "side": "create_construction_site:block/painted_steel_cyan"
+  }
+}

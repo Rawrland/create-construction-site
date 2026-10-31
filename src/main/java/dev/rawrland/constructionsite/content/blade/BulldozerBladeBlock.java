@@ -9,6 +9,8 @@ import net.minecraft.core.Direction;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.InteractionResult;
+import java.util.List;
+import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.context.BlockPlaceContext;
 import net.minecraft.world.item.context.UseOnContext;
@@ -151,6 +153,42 @@ public class BulldozerBladeBlock extends Block implements IBE<BulldozerBladeBloc
         if (!level.isClientSide && level.getBlockEntity(pos) instanceof BulldozerBladeBlockEntity blade) {
             blade.cycleGroupMount();
             IWrenchable.playRotateSound(level, pos);
+        }
+        return InteractionResult.SUCCESS;
+    }
+
+    /**
+     * Wrench, sneak and right-click: picks up one slice of the blade, with its load,
+     * into the player's inventory, like the Excavator Bucket (owner, 20 October 2026).
+     * A slice is the column of blocks at the clicked place along the cutting edge.
+     * (Create calls this method by name; it replaces Create's default of picking up one block.)
+     */
+    public InteractionResult onSneakWrenched(BlockState state, UseOnContext context) {
+        Level level = context.getLevel();
+        BlockPos pos = context.getClickedPos();
+        Player player = context.getPlayer();
+        if (!(level instanceof ServerLevel serverLevel)) {
+            return InteractionResult.SUCCESS;
+        }
+        if (!(level.getBlockEntity(pos) instanceof BulldozerBladeBlockEntity clicked)) {
+            return InteractionResult.PASS;
+        }
+        // Work out the slice first: removing its first block already takes the blade apart.
+        List<BlockPos> slice = clicked.getSlicePositions();
+        boolean giveItems = player != null && !player.isCreative();
+        for (BlockPos slicePos : slice) {
+            if (!(level.getBlockEntity(slicePos) instanceof BulldozerBladeBlockEntity member)) {
+                continue;
+            }
+            // Take the load out first, so removing the block does not drop it on the ground.
+            List<ItemStack> items = member.removeContentAsBroken(serverLevel);
+            items.add(new ItemStack(level.getBlockState(slicePos).getBlock()));
+            if (giveItems) {
+                for (ItemStack stack : items) {
+                    player.getInventory().placeItemBackInInventory(stack);
+                }
+            }
+            level.destroyBlock(slicePos, false);
         }
         return InteractionResult.SUCCESS;
     }

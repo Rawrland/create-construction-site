@@ -1,5 +1,9 @@
 package dev.rawrland.constructionsite.client;
 
+import dev.rawrland.constructionsite.content.tool.ToolPaint;
+import javax.annotation.Nullable;
+import net.minecraft.world.item.DyeColor;
+
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import dev.rawrland.constructionsite.content.blade.BladeGroup;
@@ -94,7 +98,7 @@ public class BulldozerBladeRenderer implements BlockEntityRenderer<BulldozerBlad
 
         VertexConsumer buffer = bufferSource.getBuffer(RenderType.entityCutoutNoCull(InventoryMenu.BLOCK_ATLAS));
         ToolPainter painter = new ToolPainter(buffer, poseStack.last(), axes, packedLight);
-        drawBlade(painter, height, width, blade.getMount());
+        drawBlade(painter, height, width, blade.getMount(), ToolPaint.of(blade.getBlockState().getBlock()));
 
         // The pile comes last: drawing blocks switches to other buffers, and the
         // painter's buffer must not be used any more after that.
@@ -108,11 +112,12 @@ public class BulldozerBladeRenderer implements BlockEntityRenderer<BulldozerBlad
      * blades and for the blade item (see {@link ToolItemRenderer}), so both
      * always look the same.
      */
-    static void drawBlade(ToolPainter painter, int height, int width, BladeMount mount) {
-        ToolPainter.Material painted = ToolPainter.framed(ToolPainter.PAINTED);
+    static void drawBlade(ToolPainter painter, int height, int width, BladeMount mount, @Nullable DyeColor colour) {
+        ToolPainter.Material painted = ToolPainter.body(colour);
         ToolPainter.Material steel = ToolPainter.framed(ToolPainter.DARK_STEEL);
         ToolPainter.Material dark = ToolPainter.plain(ToolPainter.DARK_STEEL);
-        drawPlate(painter, height, width * 16.0F, painted, steel);
+        ToolPainter.Material edge = ToolPainter.framed(ToolPainter.edge(colour));
+        drawPlate(painter, height, width * 16.0F, painted, steel, edge);
         drawMount(painter, mount, height, width * 16.0F, painted, dark);
     }
 
@@ -122,11 +127,11 @@ public class BulldozerBladeRenderer implements BlockEntityRenderer<BulldozerBlad
      * of the plate, one in the middle of every block, that stiffen it.
      */
     private static void drawPlate(ToolPainter p, float s, float totalWidth,
-                                  ToolPainter.Material painted, ToolPainter.Material steel) {
+                                  ToolPainter.Material painted, ToolPainter.Material steel, ToolPainter.Material edge) {
         float d = depthScale(s);
         float end = END_PLATE * s;
         float plateBack = PLATE_BACK * d;
-        p.box(steel, end, 0, 0, totalWidth - end, EDGE_TOP * s, EDGE_DEPTH * d);
+        p.box(edge, end, 0, 0, totalWidth - end, EDGE_TOP * s, EDGE_DEPTH * d);
         p.box(painted, end, EDGE_TOP * s, EDGE_DEPTH * d, totalWidth - end, LIP_BOTTOM * s, plateBack);
         p.box(painted, end, LIP_BOTTOM * s, 0, totalWidth - end, 16.0F * s, EDGE_DEPTH * d);
 

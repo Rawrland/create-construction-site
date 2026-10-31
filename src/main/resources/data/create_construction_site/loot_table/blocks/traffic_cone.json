@@ -1,0 +1,169 @@
+{
+  "type": "minecraft:block",
+  "pools": [
+    {
+      "rolls": 1,
+      "entries": [
+        {
+          "type": "minecraft:item",
+          "name": "create_construction_site:traffic_cone",
+          "functions": [
+            {
+              "function": "minecraft:set_count",
+              "add": false,
+              "count": 1,
+              "conditions": [
+                {
+                  "condition": "minecraft:block_state_property",
+                  "block": "create_construction_site:traffic_cone",
+                  "properties": {
+                    "cones": "1"
+                  }
+                }
+              ]
+            },
+            {
+              "function": "minecraft:set_count",
+              "add": false,
+              "count": 2,
+              "conditions": [
+                {
+                  "condition": "minecraft:block_state_property",
+                  "block": "create_construction_site:traffic_cone",
+                  "properties": {
+                    "cones": "2"
+                  }
+                }
+              ]
+            },
+            {
+              "function": "minecraft:set_count",
+              "add": false,
+              "count": 3,
+              "conditions": [
+                {
+                  "condition": "minecraft:block_state_property",
+                  "block": "create_construction_site:traffic_cone",
+                  "properties": {
+                    "cones": "3"
+                  }
+                }
+              ]
+            },
+            {
+              "function": "minecraft:set_count",
+              "add": false,
+              "count": 4,
+              "conditions": [
+                {
+                  "condition": "minecraft:block_state_property",
+                  "block": "create_construction_site:traffic_cone",
+                  "properties": {
+                    "cones": "4"
+                  }
+                }
+              ]
+            },
+            {
+              "function": "minecraft:set_count",
+              "add": false,
+              "count": 5,
+              "conditions": [
+                {
+                  "condition": "minecraft:block_state_property",
+                  "block": "create_construction_site:traffic_cone",
+                  "properties": {
+                    "cones": "5"
+                  }
+                }
+              ]
+            },
+            {
+              "function": "minecraft:set_count",
+              "add": false,
+              "count": 6,
+              "conditions": [
+                {
+                  "condition": "minecraft:block_state_property",
+                  "block": "create_construction_site:traffic_cone",
+                  "properties": {
+                    "cones": "6"
+                  }
+                }
+              ]
+            },
+            {
+              "function": "minecraft:set_count",
+              "add": false,
+              "count": 7,
+              "conditions": [
+                {
+                  "condition": "minecraft:block_state_property",
+                  "block": "create_construction_site:traffic_cone",
+                  "properties": {
+                    "cones": "7"
+                  }
+                }
+              ]
+            },
+            {
+              "function": "minecraft:set_count",
+              "add": false,
+              "count": 8,
+              "conditions": [
+                {
+                  "condition": "minecraft:block_state_property",
+                  "block": "create_construction_site:traffic_cone",
+                  "properties": {
+                    "cones": "8"
+                  }
+                }
+              ]
+            }
+          ]
+        }
+      ],
+      "conditions": [
+        {
+          "condition": "minecraft:survives_explosion"
+        }
+      ]
+    },
+    {
+      "rolls": 1,
+      "entries": [
+        {
+          "type": "minecraft:item",
+          "name": "create_construction_site:warning_flasher"
+        }
+      ],
+      "conditions": [
+        {
+          "condition": "minecraft:block_state_property",
+          "block": "create_construction_site:traffic_cone",
+          "properties": {
+            "lamp": "flasher"
+          }
+        }
+      ]
+    },
+    {
+      "rolls": 1,
+      "entries": [
+        {
+          "type": "minecraft:item",
+          "name": "create_construction_site:warning_beacon"
+        }
+      ],
+      "conditions": [
+        {
+          "condition": "minecraft:block_state_property",
+          "block": "create_construction_site:traffic_cone",
+          "properties": {
+            "lamp": "beacon"
+          }
+        }
+      ]
+    }
+  ]
+}

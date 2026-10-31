@@ -1,0 +1,9 @@
+{
+  "parent": "minecraft:block/slab",
+  "render_type": "minecraft:cutout",
+  "textures": {
+    "bottom": "create_construction_site:block/grating",
+    "top": "create_construction_site:block/grating",
+    "side": "create_construction_site:block/grating"
+  }
+}

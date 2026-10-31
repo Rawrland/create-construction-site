@@ -1,0 +1,8 @@
+{
+  "parent": "minecraft:block/slab_top",
+  "textures": {
+    "bottom": "create_construction_site:block/tread_plate",
+    "top": "create_construction_site:block/tread_plate",
+    "side": "create_construction_site:block/tread_plate"
+  }
+}

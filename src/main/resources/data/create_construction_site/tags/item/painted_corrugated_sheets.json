@@ -1,0 +1,21 @@
+{
+  "replace": false,
+  "values": [
+    "create_construction_site:white_corrugated_sheet",
+    "create_construction_site:light_gray_corrugated_sheet",
+    "create_construction_site:gray_corrugated_sheet",
+    "create_construction_site:black_corrugated_sheet",
+    "create_construction_site:brown_corrugated_sheet",
+    "create_construction_site:red_corrugated_sheet",
+    "create_construction_site:orange_corrugated_sheet",
+    "create_construction_site:yellow_corrugated_sheet",
+    "create_construction_site:lime_corrugated_sheet",
+    "create_construction_site:green_corrugated_sheet",
+    "create_construction_site:cyan_corrugated_sheet",
+    "create_construction_site:light_blue_corrugated_sheet",
+    "create_construction_site:blue_corrugated_sheet",
+    "create_construction_site:purple_corrugated_sheet",
+    "create_construction_site:magenta_corrugated_sheet",
+    "create_construction_site:pink_corrugated_sheet"
+  ]
+}

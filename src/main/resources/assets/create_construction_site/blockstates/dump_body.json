@@ -1,7 +1,7 @@
 {
   "variants": {
     "": {
-      "model": "create_construction_site:block/dump_body_placed"
+      "model": "create_construction_site:block/dump_body"
     }
   }
 }

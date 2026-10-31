@@ -1,0 +1,16 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "building",
+  "ingredients": [
+    {
+      "tag": "c:dyes/green"
+    },
+    {
+      "tag": "create_construction_site:excavator_buckets"
+    }
+  ],
+  "result": {
+    "count": 1,
+    "id": "create_construction_site:green_excavator_bucket"
+  }
+}

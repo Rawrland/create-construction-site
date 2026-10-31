@@ -1,0 +1,78 @@
+{
+  "parent": "minecraft:block/block",
+  "textures": {
+    "all": "create_construction_site:block/hazard_stripes_red_white",
+    "particle": "create_construction_site:block/hazard_stripes_red_white"
+  },
+  "elements": [
+    {
+      "from": [
+        2,
+        0,
+        0
+      ],
+      "to": [
+        14,
+        1,
+        2
+      ],
+      "faces": {
+        "up": {
+          "texture": "#all",
+          "uv": [
+            2,
+            0,
+            14,
+            2
+          ]
+        },
+        "down": {
+          "texture": "#all",
+          "uv": [
+            2,
+            14,
+            14,
+            16
+          ],
+          "cullface": "down"
+        },
+        "north": {
+          "texture": "#all",
+          "uv": [
+            14,
+            0,
+            2,
+            1
+          ]
+        },
+        "south": {
+          "texture": "#all",
+          "uv": [
+            2,
+            1,
+            14,
+            2
+          ]
+        },
+        "west": {
+          "texture": "#all",
+          "uv": [
+            0,
+            2,
+            2,
+            3
+          ]
+        },
+        "east": {
+          "texture": "#all",
+          "uv": [
+            2,
+            13,
+            0,
+            14
+          ]
+        }
+      }
+    }
+  ]
+}

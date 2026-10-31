@@ -1,0 +1,22 @@
+{
+  "replace": false,
+  "values": [
+    "create_construction_site:bulldozer_blade",
+    "create_construction_site:white_bulldozer_blade",
+    "create_construction_site:light_gray_bulldozer_blade",
+    "create_construction_site:gray_bulldozer_blade",
+    "create_construction_site:black_bulldozer_blade",
+    "create_construction_site:brown_bulldozer_blade",
+    "create_construction_site:red_bulldozer_blade",
+    "create_construction_site:orange_bulldozer_blade",
+    "create_construction_site:yellow_bulldozer_blade",
+    "create_construction_site:lime_bulldozer_blade",
+    "create_construction_site:green_bulldozer_blade",
+    "create_construction_site:cyan_bulldozer_blade",
+    "create_construction_site:light_blue_bulldozer_blade",
+    "create_construction_site:blue_bulldozer_blade",
+    "create_construction_site:purple_bulldozer_blade",
+    "create_construction_site:magenta_bulldozer_blade",
+    "create_construction_site:pink_bulldozer_blade"
+  ]
+}
