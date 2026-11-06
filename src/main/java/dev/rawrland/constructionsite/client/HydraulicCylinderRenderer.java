@@ -90,20 +90,28 @@ public class HydraulicCylinderRenderer implements BlockEntityRenderer<CylinderMo
         Prism prism = new Prism(bufferSource.getBuffer(RenderType.entityCutoutNoCull(InventoryMenu.BLOCK_ATLAS)),
             poseStack.last(), dir, packedLight);
 
-        TextureAtlasSprite darkSteel = sprite("dark_steel_fill");
-        TextureAtlasSprite brass = sprite("brass_fill");
-        TextureAtlasSprite iron = sprite("polished_iron_fill");
+        // Each part with the platings' edges: an outline and a light and a dark bevel down both
+        // sides (owner, 6 November 2026: plain colours looked "too perfect").
+        TextureAtlasSprite barrelTexture = sprite("cylinder_barrel");
+        TextureAtlasSprite brass = sprite("cylinder_collar");
+        TextureAtlasSprite iron = sprite("cylinder_rod");
+        TextureAtlasSprite eye = sprite("cylinder_eye");
+        // Their end faces: a framed square, like a plating seen end-on.
+        TextureAtlasSprite barrelEnd = sprite("cylinder_barrel_end");
+        TextureAtlasSprite brassEnd = sprite("cylinder_collar_end");
+        TextureAtlasSprite ironEnd = sprite("cylinder_rod_end");
+        TextureAtlasSprite eyeEnd = sprite("cylinder_eye_end");
 
         // Barrel with a brass collar at each end.
-        prism.draw(a, a.add(dir.scale(barrelDrawn)), BARREL_HALF, darkSteel, barrelColour);
-        prism.draw(a.add(dir.scale(0.12)), a.add(dir.scale(0.12 + COLLAR_LENGTH)), COLLAR_HALF, brass, plain);
+        prism.draw(a, a.add(dir.scale(barrelDrawn)), BARREL_HALF, barrelTexture, barrelEnd, barrelColour);
+        prism.draw(a.add(dir.scale(0.12)), a.add(dir.scale(0.12 + COLLAR_LENGTH)), COLLAR_HALF, brass, brassEnd, plain);
         // The end collar reaches a hair past the barrel's end, so its end face covers the barrel's
         // instead of lying in the same spot and flickering through it (owner, 30 October 2026).
         prism.draw(a.add(dir.scale(barrelDrawn - COLLAR_LENGTH)), a.add(dir.scale(barrelDrawn + COLLAR_OVERHANG)),
-            COLLAR_HALF, brass, plain);
+            COLLAR_HALF, brass, brassEnd, plain);
         // Rod, coming out of the barrel, with an eye at the pin.
-        prism.draw(b.subtract(dir.scale(rodDrawn)), b, ROD_HALF, iron, plain);
-        prism.draw(b.subtract(dir.scale(0.2)), b.add(dir.scale(0.1)), EYE_HALF, darkSteel, plain);
+        prism.draw(b.subtract(dir.scale(rodDrawn)), b, ROD_HALF, iron, ironEnd, plain);
+        prism.draw(b.subtract(dir.scale(0.2)), b.add(dir.scale(0.1)), EYE_HALF, eye, eyeEnd, plain);
     }
 
     // ------------------------------------------------------------ frames (Sable)
@@ -143,7 +151,9 @@ public class HydraulicCylinderRenderer implements BlockEntityRenderer<CylinderMo
 
     /**
      * Draws square bars along one direction. The texture repeats every block along
-     * the bar, so long bars are not stretched.
+     * the bar, so long bars are not stretched. Across the bar each face shows the texture's
+     * first columns pixel for pixel, as many as the bar is wide, so the edges drawn there
+     * (generate_textures.py, "hydraulics") sit exactly on the bar's edges.
      */
     private static final class Prism {
         private final VertexConsumer buffer;
@@ -163,7 +173,7 @@ public class HydraulicCylinderRenderer implements BlockEntityRenderer<CylinderMo
             this.up = side.cross(dir).normalize();
         }
 
-        void draw(Vec3 from, Vec3 to, float half, TextureAtlasSprite sprite, int[] colour) {
+        void draw(Vec3 from, Vec3 to, float half, TextureAtlasSprite sprite, TextureAtlasSprite end, int[] colour) {
             double length = to.subtract(from).length();
             if (length < 1.0E-4) {
                 return;
@@ -173,8 +183,8 @@ public class HydraulicCylinderRenderer implements BlockEntityRenderer<CylinderMo
             Vec3[] across = {up, side.scale(-1), up.scale(-1), side};
             float uSpan = sprite.getU1() - sprite.getU0();
             float vSpan = sprite.getV1() - sprite.getV0();
-            float u0 = sprite.getU0() + uSpan * (0.5F - half);
-            float u1 = sprite.getU0() + uSpan * (0.5F + half);
+            float u0 = sprite.getU0();
+            float u1 = sprite.getU0() + uSpan * (2F * half);
             for (double start = 0; start < length; start += 1.0) {
                 double stop = Math.min(length, start + 1.0);
                 Vec3 p0 = from.add(dir.scale(start));
@@ -189,10 +199,13 @@ public class HydraulicCylinderRenderer implements BlockEntityRenderer<CylinderMo
                 }
             }
             // End caps.
-            float c0 = sprite.getV0() + vSpan * (0.5F - half);
-            float c1 = sprite.getV0() + vSpan * (0.5F + half);
-            cap(from, half, u0, u1, c0, c1, dir.scale(-1), colour);
-            cap(to, half, u0, u1, c0, c1, dir, colour);
+            // End caps: the framed square in the end texture's corner, pixel for pixel.
+            float e0 = end.getU0();
+            float e1 = end.getU0() + (end.getU1() - end.getU0()) * (2F * half);
+            float c0 = end.getV0();
+            float c1 = end.getV0() + (end.getV1() - end.getV0()) * (2F * half);
+            cap(from, half, e0, e1, c0, c1, dir.scale(-1), colour);
+            cap(to, half, e0, e1, c0, c1, dir, colour);
         }
 
         private void cap(Vec3 centre, float half, float u0, float u1, float v0, float v1, Vec3 normal, int[] colour) {

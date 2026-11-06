@@ -1,0 +1,24 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "building",
+  "pattern": [
+    "P",
+    "T",
+    "I"
+  ],
+  "key": {
+    "P": {
+      "item": "create_construction_site:brass_plating"
+    },
+    "T": {
+      "item": "create:fluid_tank"
+    },
+    "I": {
+      "tag": "c:ingots/iron"
+    }
+  },
+  "result": {
+    "count": 1,
+    "id": "create_construction_site:hydraulic_cylinder"
+  }
+}

@@ -1,0 +1,27 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "building",
+  "pattern": [
+    "RWR",
+    "B B",
+    "G G"
+  ],
+  "key": {
+    "R": {
+      "item": "minecraft:red_wool"
+    },
+    "W": {
+      "item": "minecraft:white_wool"
+    },
+    "B": {
+      "item": "minecraft:iron_bars"
+    },
+    "G": {
+      "item": "minecraft:gray_wool"
+    }
+  },
+  "result": {
+    "count": 6,
+    "id": "create_construction_site:barrier_board"
+  }
+}

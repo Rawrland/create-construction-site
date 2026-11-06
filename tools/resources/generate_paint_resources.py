@@ -164,11 +164,7 @@ def main(root):
     tag(out, MOD, "item/brass_platings", plating_ids)
     tag(out, MOD, "item/painted_brass_platings", plating_ids[1:])
     splashing(out, "washing_brass_plating", f"{MOD}:painted_brass_platings", rl("brass_plating"))
-    # Four of Create's Brass Sheets in a square give four Brass Plating.
-    out.data("recipe/brass_plating.json", {
-        "type": "minecraft:crafting_shaped", "category": "building",
-        "pattern": ["##", "##"], "key": {"#": {"tag": "c:plates/brass"}},
-        "result": {"count": 4, "id": rl("brass_plating")}})
+    # Brass Plating itself is cut from Brass Ingots: generate_recipes.py (add-recipes).
 
     # --- plating slabs and stairs (add-metal-slabs-and-stairs) --------------------------
     # Every plating as slab and stairs, in its colour, with its texture; the connected textures
@@ -366,8 +362,7 @@ def main(root):
         stonecutting(out, f"{result}_from_industrial_iron_block", iron, rl(result), count)
     stonecutting(out, "tread_plate_slab_from_tread_plate", {"item": rl("tread_plate")}, rl("tread_plate_slab"), 2)
     stonecutting(out, "tread_plate_stairs_from_tread_plate", {"item": rl("tread_plate")}, rl("tread_plate_stairs"), 1)
-    # The brass Corrugated Sheet is cut from Brass Plating.
-    stonecutting(out, "corrugated_sheet_from_brass_plating", {"item": rl("brass_plating")}, rl("corrugated_sheet"), 1)
+    # The brass Corrugated Sheet is crafted from Brass Sheets: generate_recipes.py (add-recipes).
     stonecutting(out, "grating_slab_from_grating", {"item": rl("grating")}, rl("grating_slab"), 2)
 
     # --- shared tags ---------------------------------------------------------------------------

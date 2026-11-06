@@ -3,7 +3,7 @@
   "textures": {
     "mesh": "create_construction_site:block/site_fence_mesh",
     "steel": "create_construction_site:block/site_fence_steel",
-    "foot": "create_construction_site:block/site_fence_foot",
+    "foot": "minecraft:block/stone",
     "clamp": "create_construction_site:block/rubber",
     "particle": "create_construction_site:block/site_fence_steel"
   },

@@ -1,0 +1,27 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "building",
+  "pattern": [
+    "LRL",
+    "LCL",
+    " T "
+  ],
+  "key": {
+    "L": {
+      "item": "minecraft:lever"
+    },
+    "R": {
+      "item": "create:redstone_link"
+    },
+    "C": {
+      "item": "create:linked_controller"
+    },
+    "T": {
+      "item": "create:controls"
+    }
+  },
+  "result": {
+    "count": 1,
+    "id": "create_construction_site:operator_console"
+  }
+}

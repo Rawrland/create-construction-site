@@ -542,6 +542,65 @@ TEXTURES["polished_iron_connected"] = lambda: connected(polished_iron(), polishe
 TEXTURES["corrugated_brass"] = lambda: corrugated(["#f7cb6c", "#eec168", BRASS_MAIN, BRASS_SHADE, BRASS_SHADE_DARK,
                                                     BRASS_SHADE_DARK, BRASS_RIM_LIGHT])
 
+# --- hydraulics (owner, 6 November 2026: "the colours are too perfect") ----------------
+# The cylinder's parts get the platings' edges: a dark outline and a light and a dark bevel
+# along both sides of each bar. Only the first `width` columns are used (the renderer samples
+# them pixel for pixel); the pattern runs along the rows, so the bars repeat seamlessly.
+
+def bar(fill, palette, width, light, dark, outline=None):
+    """A bar's side: columns 0..width-1 across the bar, the fill's own rows along it."""
+    img = fill.copy()
+    edge = 0 if outline is None else 1
+    for y in range(16):
+        if outline is not None:
+            img.putpixel((0, y), rgb(palette[outline]))
+            img.putpixel((width - 1, y), rgb(palette[outline]))
+        img.putpixel((edge, y), rgb(palette[light]))
+        img.putpixel((width - 1 - edge, y), rgb(palette[dark]))
+    return img
+
+
+def bar_end(fill, palette, width, light, dark, outline=None):
+    """A bar's end face: a framed square of `width` pixels in the top-left corner (outline,
+    then light on top and left, dark on bottom and right), like a plating seen end-on."""
+    img = fill.copy()
+    edge = 0 if outline is None else 1
+    if outline is not None:
+        for i in range(width):
+            for p in [(i, 0), (0, i), (i, width - 1), (width - 1, i)]:
+                img.putpixel(p, rgb(palette[outline]))
+    light_frame(img, palette, light, dark, edge, edge, width - edge, width - edge)
+    return img
+
+
+def cylinder_mount_base():
+    """The mount's dark steel base plate (12 x 3 x 12 pixels): its top in the middle 12 x 12
+    with an outline and bevel like Dark Steel Plating; its sides in rows 0 to 2."""
+    img = dark_steel_fill()
+    light_frame(img, S, 5, 8, 3, 3, 13, 13)
+    for i in range(2, 14):
+        for p in [(i, 2), (2, i), (i, 13), (13, i)]:
+            img.putpixel(p, rgb(S[9]))
+    for x in range(2, 14):
+        img.putpixel((x, 0), rgb(S[5]))
+        img.putpixel((x, 1), rgb(S[7]))
+        img.putpixel((x, 2), rgb(S[9]))
+    for y in range(0, 3):
+        img.putpixel((2, y), rgb(S[9]))
+        img.putpixel((13, y), rgb(S[9]))
+    return img
+
+
+TEXTURES["cylinder_barrel"] = lambda: bar(dark_steel_fill(), S, 7, 5, 8, 9)
+TEXTURES["cylinder_collar"] = lambda: bar(brass_fill(), BRASS_PAINT, 9, 1, 3, 4)
+TEXTURES["cylinder_rod"] = lambda: bar(polished_iron_fill(), P, 4, 0, 4)
+TEXTURES["cylinder_eye"] = lambda: bar(dark_steel_fill(), S, 6, 5, 8, 9)
+TEXTURES["cylinder_mount_base"] = cylinder_mount_base
+TEXTURES["cylinder_barrel_end"] = lambda: bar_end(dark_steel_fill(), S, 7, 5, 8, 9)
+TEXTURES["cylinder_collar_end"] = lambda: bar_end(brass_fill(), BRASS_PAINT, 9, 1, 3, 4)
+TEXTURES["cylinder_rod_end"] = lambda: bar_end(polished_iron_fill(), P, 4, 0, 4)
+TEXTURES["cylinder_eye_end"] = lambda: bar_end(dark_steel_fill(), S, 6, 5, 8, 9)
+
 if __name__ == "__main__":
     out = Path(sys.argv[1] if len(sys.argv) > 1 else "out")
     out.mkdir(parents=True, exist_ok=True)

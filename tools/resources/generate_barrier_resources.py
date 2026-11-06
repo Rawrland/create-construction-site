@@ -337,7 +337,7 @@ def fence(out, lang):
     Every part is drawn in its own place (not turned), so the mesh lines up in both directions.
     Model names: <part> for the lower block on the ground, <part>_stacked for a lower block on
     another fence (no feet), <part>_upper for the upper block."""
-    t = {"mesh": tex("site_fence_mesh"), "steel": tex("site_fence_steel"), "foot": tex("site_fence_foot"),
+    t = {"mesh": tex("site_fence_mesh"), "steel": tex("site_fence_steel"), "foot": "minecraft:block/stone",
          "clamp": tex("rubber"), "particle": tex("site_fence_steel")}
     variants = {"": ("lower", True), "_stacked": ("lower", False), "_upper": ("upper", True)}
 
@@ -419,7 +419,7 @@ def fence(out, lang):
                                                "textures": {"layer0": rl("item/site_fence")}})
     from PIL import Image
     icon = Image.new("RGBA", (16, 16), (0, 0, 0, 0))
-    frame, wire, foot = (124, 129, 134, 255), (169, 174, 179, 255), (163, 163, 158, 255)
+    frame, wire, foot = (124, 129, 134, 255), (169, 174, 179, 255), (125, 125, 125, 255)
     for x in range(1, 15):
         for y in range(1, 13):
             edge = x in (1, 14) or y in (1, 12)

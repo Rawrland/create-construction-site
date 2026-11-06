@@ -1,0 +1,13 @@
+{
+  "type": "create:haunting",
+  "ingredients": [
+    {
+      "item": "create_construction_site:polished_iron_plating"
+    }
+  ],
+  "results": [
+    {
+      "id": "create_construction_site:dark_steel_plating"
+    }
+  ]
+}

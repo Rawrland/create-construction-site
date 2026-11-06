@@ -1,0 +1,24 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "building",
+  "pattern": [
+    "A",
+    "P",
+    "S"
+  ],
+  "key": {
+    "A": {
+      "item": "create:andesite_alloy"
+    },
+    "P": {
+      "item": "create_construction_site:brass_plating"
+    },
+    "S": {
+      "tag": "c:plates/iron"
+    }
+  },
+  "result": {
+    "count": 1,
+    "id": "create_construction_site:bulldozer_blade"
+  }
+}

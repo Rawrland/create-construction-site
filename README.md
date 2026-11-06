@@ -51,7 +51,7 @@ A control desk for vehicles on Create's train controls desk: a cross of four but
 | | Version | |
 | --- | --- | --- |
 | Minecraft | 1.21.1 | required |
-| NeoForge | 21.1.256 or newer | required |
+| NeoForge | any 1.21.1 version (21.1.x) | required |
 | Create | 6.0.10 or newer | required |
 | Create Aeronautics (with Simulated and Sable) | 1.3.0 or newer | optional: physics vehicles, driven cylinders, bucket ropes |
 
